@@ -28,7 +28,7 @@ A dynamic, AI-powered micro-simulation designed to understand how Product Manage
 
 For personalized, AI-generated choices and scenarios:
 
-1. **Get an OpenAI API key** from [platform.openai.com](https://platform.openai.com/api-keys)
+1. **Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com/)
 
 2. **Create `.env.local`** file:
    ```bash
@@ -37,7 +37,7 @@ For personalized, AI-generated choices and scenarios:
 
 3. **Add your API key:**
    ```
-   NEXT_PUBLIC_OPENAI_API_KEY=sk-your-key-here
+   NEXT_PUBLIC_ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
    ```
 
 4. **Restart the dev server** to enable AI-powered scenarios
@@ -50,7 +50,7 @@ For personalized, AI-generated choices and scenarios:
 - Perfect for demos and testing
 
 ### With AI
-- Generates personalized choices based on project context
+- Generates personalized choices based on project context using Claude
 - Creates unique scenarios that react to user decision patterns
 - Analyzes choice history to craft relevant next steps
 - Each playthrough feels unique and personally tailored
@@ -61,7 +61,7 @@ For personalized, AI-generated choices and scenarios:
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
 - **Framer Motion** - Animations
-- **OpenAI GPT-4** - AI scenario generation (optional)
+- **Anthropic Claude** - AI scenario generation (optional)
 
 ## Project Structure
 

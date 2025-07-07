@@ -1,6 +1,6 @@
 import { Turn, UserChoice } from './types'
 
-const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY || ''
+const ANTHROPIC_API_KEY = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || ''
 
 export async function generateTurn(
   turnNumber: number, 
@@ -9,7 +9,7 @@ export async function generateTurn(
 ): Promise<Turn> {
   
   // Try AI first, fallback to mock data
-  if (OPENAI_API_KEY) {
+  if (ANTHROPIC_API_KEY) {
     try {
       return await generateTurnWithAI(turnNumber, projectContext, previousChoices)
     } catch (error) {
@@ -95,7 +95,7 @@ function extractProductType(projectContext: string): string {
   return 'digital product'
 }
 
-// AI integration for personalized choice generation
+// AI integration for personalized choice generation using Claude
 export async function generateTurnWithAI(
   turnNumber: number,
   projectContext: string,
@@ -105,26 +105,33 @@ export async function generateTurnWithAI(
   const prompt = buildPersonalizedPrompt(turnNumber, projectContext, previousChoices)
   
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'gpt-4',
-        messages: [{ role: 'system', content: prompt }],
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: 500,
         temperature: 0.8,
-        max_tokens: 500
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
       })
     })
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+      const errorText = await response.text()
+      throw new Error(`Claude API error: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
-    const content = data.choices[0].message.content.trim()
+    const content = data.content[0].text.trim()
     
     // Clean up any markdown code blocks
     const jsonString = content.replace(/```json\n?|\n?```/g, '').trim()

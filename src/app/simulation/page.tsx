@@ -18,7 +18,7 @@ export default function SimulationPage() {
 
   useEffect(() => {
     // Check if AI is enabled
-    const aiEnabled = !!process.env.NEXT_PUBLIC_OPENAI_API_KEY
+    const aiEnabled = !!process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY
     setIsAIEnabled(aiEnabled)
     
     // Get project context from URL params or sessionStorage
