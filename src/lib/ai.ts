@@ -8,7 +8,15 @@ export async function generateTurn(
   previousChoices: UserChoice[] = []
 ): Promise<Turn> {
   
-  // For now, return mock data - we'll implement AI later
+  // Try AI first, fallback to mock data
+  if (OPENAI_API_KEY) {
+    try {
+      return await generateTurnWithAI(turnNumber, projectContext, previousChoices)
+    } catch (error) {
+      console.warn('AI generation failed, using fallback:', error)
+    }
+  }
+  
   return getMockTurn(turnNumber, projectContext, previousChoices)
 }
 
@@ -87,14 +95,14 @@ function extractProductType(projectContext: string): string {
   return 'digital product'
 }
 
-// This will be implemented when we add AI integration
+// AI integration for personalized choice generation
 export async function generateTurnWithAI(
   turnNumber: number,
   projectContext: string,
   previousChoices: UserChoice[]
 ): Promise<Turn> {
   
-  const prompt = buildPrompt(turnNumber, projectContext, previousChoices)
+  const prompt = buildPersonalizedPrompt(turnNumber, projectContext, previousChoices)
   
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -104,9 +112,10 @@ export async function generateTurnWithAI(
         'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4',
         messages: [{ role: 'system', content: prompt }],
-        temperature: 0.7
+        temperature: 0.8,
+        max_tokens: 500
       })
     })
 
@@ -115,9 +124,12 @@ export async function generateTurnWithAI(
     }
 
     const data = await response.json()
-    const content = data.choices[0].message.content
+    const content = data.choices[0].message.content.trim()
     
-    return JSON.parse(content)
+    // Clean up any markdown code blocks
+    const jsonString = content.replace(/```json\n?|\n?```/g, '').trim()
+    
+    return JSON.parse(jsonString)
   } catch (error) {
     console.error('AI generation failed:', error)
     // Fallback to mock data
@@ -125,49 +137,75 @@ export async function generateTurnWithAI(
   }
 }
 
-function buildPrompt(turnNumber: number, projectContext: string, previousChoices: UserChoice[]): string {
-  const basePrompt = `You are a work-sim engine for Product Managers at tech companies. Use Markdown to bold key terms.
+function buildPersonalizedPrompt(turnNumber: number, projectContext: string, previousChoices: UserChoice[]): string {
+  const productName = extractProductName(projectContext)
+  const productType = extractProductType(projectContext)
+  
+  if (turnNumber === 1) {
+    return `You are an expert at creating realistic product management scenarios. Your goal is to write choices that feel personally relevant to this specific PM's situation.
+
+# Task
+Create a JSON response with:
+1. A 2-sentence "scene" about a launch crisis for their ${productType}
+2. Three "options" that feel personally crafted for this specific product context
 
 # Context
-- projectContext: "${projectContext}"
-`
+- Product: ${projectContext}
+- Setting: Tech company, 48 hours before launch
+- Crisis: Critical bug affecting user data accuracy, marketing already announced
 
-  if (turnNumber === 1) {
-    return basePrompt + `
-# Your Task for Turn 1 (The Setup)
-1. Write a 2-sentence \`scene\` presenting a last-minute launch crisis directly involving the projectContext
-2. Rewrite the \`options\` below to fit your scene, preserving \`weight\` and \`archetype\`
+# Choice Requirements
+Each option must:
+- Feel specific to "${projectContext}" (not generic)
+- Have personality and voice
+- Reflect different PM approaches
+- Include weight (1=reactive, 2=measured, 3=resilient) and archetype
 
-# Archetypes to Rewrite
-- Option A (Weight 1 - REACTIVE): "Cut a corner or ignore a problem to guarantee launch"
-- Option B (Weight 2 - MEASURED): "Announce a short delay to fix the issue properly"  
-- Option C (Weight 3 - RESILIENT): "Find a creative third option that doesn't compromise quality"
+Example format:
+{
+  "scene": "You're **48 hours** away from launching your ${productType}. Your QA team just discovered a **critical bug** that affects user data accuracy. The marketing team has already announced the launch date publicly.",
+  "options": [
+    {"label": "Push the launch anyway - we'll fix it in post-launch patches", "weight": 1, "archetype": "Reactive"},
+    {"label": "Delay the launch by one week to properly fix the issue", "weight": 2, "archetype": "Measured"},
+    {"label": "Call an emergency meeting with engineering to explore quick fixes", "weight": 3, "archetype": "Resilient"}
+  ]
+}
 
-Return valid JSON with: scene, options[{label, weight, archetype}]`
+Make the choices feel like they're written FOR this specific product, not generic PM advice.`
   }
 
   const lastChoice = previousChoices[previousChoices.length - 1]
+  const choicePattern = previousChoices.map(c => c.archetype).join(' → ')
   
-  return basePrompt + `
+  return `You are an expert at creating realistic product management scenarios. Your goal is to write choices that react personally to this PM's decision history.
+
+# Task
+Create a JSON response with:
+1. A 2-sentence "scene" showing consequences of their previous decision
+2. Three "options" that feel personally crafted based on their choice pattern
+
 # Context
-- previousScene: "${getPreviousScene(turnNumber - 1)}"
-- userChoice: "${lastChoice.label}"
-- choiceArchetype: "${lastChoice.archetype}"
+- Product: ${projectContext}
+- Their previous choice: "${lastChoice.label}" (${lastChoice.archetype} approach)
+- Their pattern so far: ${choicePattern}
+- Turn: ${turnNumber} of 3 (${turnNumber === 2 ? 'The Confrontation' : 'The Resolution'})
 
-# Your Task for Turn ${turnNumber} (${turnNumber === 2 ? 'The Confrontation' : 'The Resolution'})
-1. Write a 2-sentence \`scene\` showing the DIRECT CONSEQUENCE of the user's choice from Turn ${turnNumber - 1}
-2. Make it feel like a natural continuation of their decision
-3. Rewrite the \`options\` below to fit this new crisis situation
-
-# Archetypes to Rewrite  
-- Option A (Weight 1 - REACTIVE): "React emotionally or make a snap decision"
-- Option B (Weight 2 - MEASURED): "Gather information and create a coordinated response"
-- Option C (Weight 3 - RESILIENT): "Stay calm and guide the team through the crisis"
-
-Return valid JSON with: scene, options[{label, weight, archetype}]`
+# Previous Decision Analysis
+${lastChoice.archetype === 'Reactive' ? 
+  `They chose to act quickly/urgently. Show realistic consequences of rushing.` :
+  lastChoice.archetype === 'Measured' ? 
+  `They chose to be methodical/planned. Show realistic consequences of slowing down.` :
+  `They chose to be resilient/creative. Show how their solution led to new challenges.`
 }
 
-function getPreviousScene(turnNumber: number): string {
-  // This would store the actual previous scene in a real implementation
-  return "Previous scene context would go here"
+# Choice Requirements
+Each option must:
+- React to their specific choice pattern (${choicePattern})
+- Feel personally relevant to someone who chose "${lastChoice.label}"
+- Include weight (1=reactive, 2=measured, 3=resilient) and archetype
+- Reference the ${productName} naturally
+
+The scene should make them think "wow, this is exactly what would happen if I made that choice."
+
+Return valid JSON only.`
 }

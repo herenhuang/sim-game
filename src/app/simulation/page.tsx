@@ -14,8 +14,13 @@ export default function SimulationPage() {
   const [choices, setChoices] = useState<UserChoice[]>([])
   const [projectContext, setProjectContext] = useState('')
   const [isComplete, setIsComplete] = useState(false)
+  const [isAIEnabled, setIsAIEnabled] = useState(false)
 
   useEffect(() => {
+    // Check if AI is enabled
+    const aiEnabled = !!process.env.NEXT_PUBLIC_OPENAI_API_KEY
+    setIsAIEnabled(aiEnabled)
+    
     // Get project context from URL params or sessionStorage
     const urlParams = new URLSearchParams(window.location.search)
     const context = urlParams.get('context') || sessionStorage.getItem('projectContext') || ''
@@ -104,6 +109,17 @@ export default function SimulationPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* AI Status Indicator */}
+      <div className="fixed top-4 right-4 z-10">
+        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+          isAIEnabled 
+            ? 'bg-green-100 text-green-800 border border-green-200' 
+            : 'bg-gray-100 text-gray-600 border border-gray-200'
+        }`}>
+          {isAIEnabled ? '🤖 AI Powered' : '📝 Demo Mode'}
+        </div>
+      </div>
+      
       <AnimatePresence mode="wait">
         {renderTurn()}
       </AnimatePresence>
