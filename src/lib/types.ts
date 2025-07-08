@@ -16,10 +16,15 @@ export interface UserChoice {
   archetype: string;
 }
 
+export interface SimulationContext {
+  project: string;
+  stakeholder: string;
+}
+
 export interface SimulationData {
   sessionId: string;
   createdAt: string;
-  projectContext: string;
+  context: SimulationContext;
   choices: UserChoice[];
   rawScore: number;
   persona: string;

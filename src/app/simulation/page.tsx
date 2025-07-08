@@ -13,31 +13,48 @@ export default function SimulationPage() {
   const [error, setError] = useState<string | null>(null)
   const [choices, setChoices] = useState<UserChoice[]>([])
   const [projectContext, setProjectContext] = useState('')
+  const [stakeholder, setStakeholder] = useState('')
   const [isComplete, setIsComplete] = useState(false)
+  const [resultsStep, setResultsStep] = useState(1) // 1, 2, or 3 for the three results parts
   const [isAIEnabled, setIsAIEnabled] = useState(false)
 
   useEffect(() => {
-    // Check if AI is enabled
-    const aiEnabled = !!process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY
-    setIsAIEnabled(aiEnabled)
+    // AI is always available now (handled by backend)
+    setIsAIEnabled(true)
     
-    // Get project context from URL params or sessionStorage
+    // Get context from URL params or sessionStorage
     const urlParams = new URLSearchParams(window.location.search)
-    const context = urlParams.get('context') || sessionStorage.getItem('projectContext') || ''
-    setProjectContext(context)
+    const project = urlParams.get('project') || ''
+    const stakeholderParam = urlParams.get('stakeholder') || ''
     
-    if (context) {
-      loadTurn(1, context)
+    // Fallback to sessionStorage
+    if (!project || !stakeholderParam) {
+      const storedContext = sessionStorage.getItem('simulationContext')
+      if (storedContext) {
+        const parsed = JSON.parse(storedContext)
+        setProjectContext(parsed.project || '')
+        setStakeholder(parsed.stakeholder || '')
+        if (parsed.project && parsed.stakeholder) {
+          loadTurn(1, parsed.project, parsed.stakeholder)
+        } else {
+          setError('Incomplete context found')
+        }
+      } else {
+        setError('No context found')
+      }
     } else {
-      setError('No project context found')
+      setProjectContext(project)
+      setStakeholder(stakeholderParam)
+      loadTurn(1, project, stakeholderParam)
     }
   }, [])
 
-  const loadTurn = async (turnNumber: number, context: string, previousChoices: UserChoice[] = []) => {
+  const loadTurn = async (turnNumber: number, project: string, stakeholderParam?: string, previousChoices: UserChoice[] = []) => {
     setLoading(true)
     setError(null)
     
     try {
+      const context = { project, stakeholder: stakeholderParam || stakeholder }
       const turn = await generateTurn(turnNumber, context, previousChoices)
       setTurnData(turn)
     } catch (err) {
@@ -61,10 +78,11 @@ export default function SimulationPage() {
 
     if (currentTurn < 3) {
       setCurrentTurn(currentTurn + 1)
-      loadTurn(currentTurn + 1, projectContext, newChoices)
+      loadTurn(currentTurn + 1, projectContext, stakeholder, newChoices)
     } else {
-      // Simulation complete
+      // Simulation complete - start with results part 1
       setIsComplete(true)
+      setResultsStep(1)
     }
   }
 
@@ -74,7 +92,7 @@ export default function SimulationPage() {
     }
 
     if (error) {
-      return <ErrorState onRetry={() => loadTurn(currentTurn, projectContext, choices)} />
+      return <ErrorState onRetry={() => loadTurn(currentTurn, projectContext, stakeholder, choices)} />
     }
 
     if (!turnData) {
@@ -90,6 +108,17 @@ export default function SimulationPage() {
     )
   }
 
+  const getMainProgressStep = () => {
+    // Step 1: Setup (25%), Step 2: Turn 1 (50%), Step 3: Turn 2 (75%), Step 4: Turn 3 (100%)
+    return currentTurn + 1 // currentTurn starts at 1, so +1 makes it: Turn1=2, Turn2=3, Turn3=4
+  }
+
+  const handleResultsContinue = () => {
+    if (resultsStep < 3) {
+      setResultsStep(resultsStep + 1)
+    }
+  }
+
   const renderResults = () => {
     const totalScore = choices.reduce((sum, choice) => sum + choice.weight, 0)
     const persona = getPersonaFromScore(totalScore)
@@ -99,6 +128,9 @@ export default function SimulationPage() {
         persona={persona}
         choices={choices}
         projectContext={projectContext}
+        stakeholder={stakeholder}
+        step={resultsStep}
+        onContinue={handleResultsContinue}
       />
     )
   }
@@ -109,6 +141,9 @@ export default function SimulationPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Progress Bar */}
+      {!isComplete && <MainProgressBar currentStep={getMainProgressStep()} />}
+      
       {/* AI Status Indicator */}
       <div className="fixed top-4 right-4 z-10">
         <div className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -127,18 +162,76 @@ export default function SimulationPage() {
   )
 }
 
+// Main experience progress bar (4 segments)
+function MainProgressBar({ currentStep }: { currentStep: number }) {
+  const totalSteps = 4 // Setup, Turn 1, Turn 2, Turn 3
+  const progress = (currentStep / totalSteps) * 100
+  
+  return (
+    <div className="fixed top-0 left-0 w-full z-50">
+      <div className="h-1 bg-gray-100 flex gap-1">
+        {Array.from({ length: totalSteps }, (_, index) => {
+          const isActive = index < currentStep
+          
+          return (
+            <div key={index} className="flex-1">
+              <div className="h-full bg-gray-100">
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={{ width: "0%" }}
+                  animate={{ width: isActive ? "100%" : "0%" }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Results experience progress bar (3 segments)
+function ResultsProgressBar({ currentStep }: { currentStep: number }) {
+  const totalSteps = 3 // Results 1, Results 2, Results 3
+  const progress = (currentStep / totalSteps) * 100
+  
+  return (
+    <div className="fixed top-0 left-0 w-full z-50">
+      <div className="h-1 bg-gray-100 flex gap-1">
+        {Array.from({ length: totalSteps }, (_, index) => {
+          const isActive = index < currentStep
+          
+          return (
+            <div key={index} className="flex-1">
+              <div className="h-full bg-gray-100">
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={{ width: "0%" }}
+                  animate={{ width: isActive ? "100%" : "0%" }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // Loading skeleton component
 function LoadingState() {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-surface flex items-center justify-center p-6 pt-8">
       <div className="w-full max-w-mobile">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded mb-6"></div>
-          <div className="h-4 bg-gray-200 rounded mb-8"></div>
-          <div className="space-y-4">
-            <div className="h-16 bg-gray-200 rounded"></div>
-            <div className="h-16 bg-gray-200 rounded"></div>
-            <div className="h-16 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded-xl mb-8"></div>
+          <div className="h-6 bg-gray-200 rounded-lg mb-10"></div>
+          <div className="space-y-6">
+            <div className="h-16 bg-gray-200 rounded-xl"></div>
+            <div className="h-16 bg-gray-200 rounded-xl"></div>
+            <div className="h-16 bg-gray-200 rounded-xl"></div>
           </div>
         </div>
       </div>
@@ -149,12 +242,12 @@ function LoadingState() {
 // Error state component
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-surface flex items-center justify-center p-6 pt-8">
       <div className="w-full max-w-mobile text-center">
-        <div className="text-2xl mb-4">Oops! Our simulation engine hiccupped. T^T</div>
+        <div className="text-3xl mb-8 text-text font-semibold">Oops! Our simulation engine hiccupped.</div>
         <button
           onClick={onRetry}
-          className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          className="bg-primary text-white px-8 py-4 rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-lg font-semibold"
         >
           Try Again
         </button>
@@ -178,7 +271,7 @@ function TurnDisplay({ turnData, onChoice, turnNumber }: {
       animate={{ x: 0 }}
       exit={{ x: '-100%' }}
       transition={{ type: 'tween', duration: 0.3 }}
-      className="min-h-screen bg-white flex items-center justify-center p-6"
+      className="min-h-screen bg-surface flex items-center justify-center p-6 pt-8"
     >
       <div className="w-full max-w-mobile">
         <AnimatedText 
@@ -197,11 +290,11 @@ function TurnDisplay({ turnData, onChoice, turnNumber }: {
                 <motion.button
                   key={index}
                   onClick={() => onChoice(choice)}
-                  className="w-full p-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                  className="w-full p-6 text-left bg-white hover:bg-gray-50 rounded-xl border border-gray-200 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-102"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  {choice.label}
+                  <span className="text-lg font-medium text-text">{choice.label}</span>
                 </motion.button>
               ))}
             </motion.div>
@@ -226,7 +319,7 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
         clearInterval(timer)
         onComplete()
       }
-    }, 50) // Adjust speed as needed
+    }, 25) // Faster typing animation
 
     return () => clearInterval(timer)
   }, [currentIndex, text, onComplete])
@@ -237,57 +330,94 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         const content = part.slice(2, -2)
-        return <span key={index} className="text-primary font-semibold">{content}</span>
+        return <span key={index} className="text-primary font-bold">{content}</span>
       }
       return part
     })
   }
 
   return (
-    <h2 className="text-2xl font-medium text-gray-900 mb-6 min-h-[4rem]">
+    <h2 className="text-3xl font-semibold text-text mb-8 min-h-[5rem] leading-relaxed">
       {parseText(displayedText)}
     </h2>
   )
 }
 
 // Results display component
-function ResultsDisplay({ persona, choices, projectContext }: {
+function ResultsDisplay({ persona, choices, projectContext, stakeholder, step, onContinue }: {
   persona: { title: string, description: string },
   choices: UserChoice[],
-  projectContext: string
+  projectContext: string,
+  stakeholder: string,
+  step: number,
+  onContinue: () => void
 }) {
   const turnLabels = ['The Setup', 'The Confrontation', 'The Resolution']
   const insights = generatePersonalInsights(choices)
   
-  return (
-    <div className="min-h-screen bg-white p-6 overflow-y-auto">
-      <div className="w-full max-w-mobile mx-auto">
+  const renderStep = () => {
+    if (step === 1) {
+      // Step 1: The Reveal
+      return (
         <motion.div
+          key="reveal"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-8"
+        >
+          <div>
+            <motion.h1 
+              className="text-4xl font-bold text-gray-900 mb-6"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              {persona.title}
+            </motion.h1>
+            <motion.p 
+              className="text-xl text-gray-700 max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {persona.description}
+            </motion.p>
+          </div>
+          
+          <motion.button
+            onClick={onContinue}
+            className="bg-primary text-white px-10 py-4 text-xl font-semibold rounded-xl hover:bg-blue-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
+            Continue
+          </motion.button>
+        </motion.div>
+      )
+    }
+    
+    if (step === 2) {
+      // Step 2: The Analysis
+      return (
+        <motion.div
+          key="analysis"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          {/* Persona Title & Description */}
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {persona.title}
+              Let's understand what drives you
             </h1>
-            <p className="text-lg text-gray-700">
-              {persona.description}
-            </p>
           </div>
-
-          {/* Strengths & Blind Spots Section */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-              Your Strengths & Blind Spots
-            </h2>
-            
             <div className="grid md:grid-cols-2 gap-6">
               {/* Strengths */}
               <div>
@@ -335,30 +465,88 @@ function ResultsDisplay({ persona, choices, projectContext }: {
               </p>
             </div>
           </motion.div>
-
-          {/* Journey Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="text-left"
-          >
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Your Journey</h2>
-            
-            <div className="space-y-6">
-              {choices.map((choice, index) => (
-                <div key={index} className="border-l-4 border-gray-200 pl-6 relative">
-                  <div className="absolute -left-2 top-0 w-4 h-4 bg-primary rounded-full border-2 border-white"></div>
-                  <h3 className="font-semibold text-gray-900">{turnLabels[index]}</h3>
-                  <p className="text-gray-700 mt-1">Your choice: <span className="italic">"{choice.label}"</span></p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    This showed a <span className="font-medium text-primary">{choice.archetype}</span> approach.
-                  </p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+          
+          <div className="text-center">
+            <button
+              onClick={onContinue}
+              className="bg-primary text-white px-10 py-4 text-xl font-semibold rounded-xl hover:bg-blue-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              Continue
+            </button>
+          </div>
         </motion.div>
+      )
+    }
+    
+    // Step 3: The Journey
+    return (
+      <motion.div
+        key="journey"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-8"
+      >
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-text mb-8 tracking-tight">
+            Here's how your story unfolded
+          </h1>
+        </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-left"
+        >
+          <div className="space-y-6">
+            {choices.map((choice, index) => (
+              <motion.div 
+                key={index} 
+                className="border-l-4 border-primary pl-8 relative"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + (index * 0.2) }}
+              >
+                <div className="absolute -left-2 top-0 w-4 h-4 bg-primary rounded-full border-2 border-surface"></div>
+                <h3 className="font-bold text-text text-lg">{turnLabels[index]}</h3>
+                <p className="text-text-secondary mt-2 text-lg">Your choice: <span className="italic font-medium">"{choice.label}"</span></p>
+                <p className="text-sm text-text-secondary mt-2">
+                  This showed a <span className="font-semibold text-primary">{choice.archetype}</span> approach.
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+        
+        <motion.div 
+          className="text-center pt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+        >
+          <p className="text-gray-600 mb-6">
+            Thank you for experiencing this leadership simulation.
+          </p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="bg-gray-600 text-white px-6 py-3 text-lg font-semibold rounded-lg hover:bg-gray-700 transition-all"
+          >
+            Start Over
+          </button>
+        </motion.div>
+      </motion.div>
+    )
+  }
+  
+  return (
+    <div className="min-h-screen bg-surface p-6 overflow-y-auto pt-12">
+      {/* Results Progress Bar */}
+      <ResultsProgressBar currentStep={step} />
+      
+      <div className="w-full max-w-2xl mx-auto">
+        <AnimatePresence mode="wait">
+          {renderStep()}
+        </AnimatePresence>
       </div>
     </div>
   )

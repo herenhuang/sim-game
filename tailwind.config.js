@@ -11,7 +11,10 @@ module.exports = {
         'inter': ['Inter', 'sans-serif'],
       },
       colors: {
-        'primary': '#2563EB',
+        'primary': '#3b82f6',
+        'surface': '#fefefe', 
+        'text': '#1e293b',
+        'text-secondary': '#64748b',
       },
       maxWidth: {
         'mobile': '600px',

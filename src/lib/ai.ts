@@ -1,37 +1,35 @@
-import { Turn, UserChoice } from './types'
+import { Turn, UserChoice, SimulationContext } from './types'
 
-const ANTHROPIC_API_KEY = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || ''
+// API key is now handled in the backend API route
 
 export async function generateTurn(
   turnNumber: number, 
-  projectContext: string, 
+  context: SimulationContext, 
   previousChoices: UserChoice[] = []
 ): Promise<Turn> {
   
   // Try AI first, fallback to mock data
-  if (ANTHROPIC_API_KEY) {
-    try {
-      return await generateTurnWithAI(turnNumber, projectContext, previousChoices)
-    } catch (error) {
-      console.warn('AI generation failed, using fallback:', error)
-    }
+  try {
+    return await generateTurnWithAI(turnNumber, context, previousChoices)
+  } catch (error) {
+    console.warn('AI generation failed, using fallback:', error)
   }
   
-  return getMockTurn(turnNumber, projectContext, previousChoices)
+  return getMockTurn(turnNumber, context, previousChoices)
 }
 
-function getMockTurn(turnNumber: number, projectContext: string, previousChoices: UserChoice[]): Turn {
-  // Extract key words from project context for natural weaving
-  const productName = extractProductName(projectContext)
-  const productType = extractProductType(projectContext)
+function getMockTurn(turnNumber: number, context: SimulationContext, previousChoices: UserChoice[]): Turn {
+  // Parse context for natural language
+  const projectRef = parseProjectContext(context.project)
+  const stakeholderRef = parseStakeholder(context.stakeholder)
   
   if (turnNumber === 1) {
     return {
-      scene: `You're **48 hours** away from launching your ${productType}. Your QA team just discovered a **critical bug** that affects user data accuracy. The marketing team has already announced the launch date publicly.`,
+      scene: `You're **48 hours** away from launching your ${projectRef}. Your QA team just discovered a **critical bug** that affects user data accuracy. The marketing team has already announced the launch date publicly.`,
       options: [
-        { label: "Push the launch anyway - we'll fix it in post-launch patches", weight: 1, archetype: "Reactive" },
-        { label: "Delay the launch by one week to properly fix the issue", weight: 2, archetype: "Measured" },
-        { label: "Call an emergency meeting with engineering to explore quick fixes", weight: 3, archetype: "Resilient" }
+        { label: `Push the ${projectRef} launch anyway - we'll fix it in post-launch patches`, weight: 1, archetype: "Reactive" },
+        { label: `Delay the ${projectRef} launch by one week to properly fix the issue`, weight: 2, archetype: "Measured" },
+        { label: `Call an emergency meeting with engineering to explore quick fixes for the ${projectRef}`, weight: 3, archetype: "Resilient" }
       ]
     }
   }
@@ -41,19 +39,19 @@ function getMockTurn(turnNumber: number, projectContext: string, previousChoices
   if (turnNumber === 2) {
     let scene = ""
     if (lastChoice?.archetype === "Reactive") {
-      scene = `**Two days post-launch**, your ${productName} is flooding support with angry customer emails about missing data. Your CEO wants a status update in **30 minutes**. The support team is overwhelmed.`
+      scene = `**Two days post-launch**, your ${projectRef} is flooding support with angry customer emails about missing data. The support team is overwhelmed and ${stakeholderRef} wants a status update in **30 minutes**.`
     } else if (lastChoice?.archetype === "Measured") {
-      scene = `After delaying the launch, stakeholders are pressuring you daily about the ${productName} timeline. A competitor just announced a **similar feature**. The team is stressed about falling behind.`
+      scene = `After delaying the launch, stakeholders are pressuring you daily about the ${projectRef} timeline. A competitor just announced a **similar feature** and the team is stressed about falling behind.`
     } else {
-      scene = `Your engineering team found a clever workaround for the ${productName} bug, but it requires **rebuilding a core component**. Users are already asking when they can access the new features.`
+      scene = `Your engineering team found a clever workaround for the ${projectRef} bug, but it requires **rebuilding a core component**. Users are already asking when they can access the new features.`
     }
     
     return {
       scene,
       options: [
-        { label: "Send an immediate apology email promising a fix within 24 hours", weight: 1, archetype: "Reactive" },
-        { label: "Analyze the issues first, then schedule a coordinated response", weight: 2, archetype: "Measured" },
-        { label: "Draft a calm, transparent update acknowledging the problems", weight: 3, archetype: "Resilient" }
+        { label: `Send an immediate, decisive message to the team about how we're handling this`, weight: 1, archetype: "Reactive" },
+        { label: `Take an hour to analyze the full impact before scheduling a coordinated response`, weight: 2, archetype: "Measured" },
+        { label: `Draft a calm, reassuring update for the team while exploring alternative solutions`, weight: 3, archetype: "Resilient" }
       ]
     }
   }
@@ -61,158 +59,184 @@ function getMockTurn(turnNumber: number, projectContext: string, previousChoices
   // Turn 3
   let scene = ""
   if (previousChoices.some(c => c.archetype === "Reactive")) {
-    scene = `The **board** is demanding answers about the ${productName} crisis. Stakeholders are questioning your team's competence. You need to present a path forward that restores confidence while being realistic about timelines.`
+    scene = `The **board** is demanding answers about the ${projectRef} crisis. Stakeholders are questioning your team's competence and you need to face ${stakeholderRef} directly.`
   } else {
-    scene = `The executive team wants a **final update** on the ${productName} recovery. Your careful approach has gained some trust, but they need assurance that the product will deliver on its promises.`
+    scene = `The executive team wants a **final update** on the ${projectRef} recovery. Your careful approach has gained some trust, but ${stakeholderRef} needs assurance that the product will deliver.`
   }
   
   return {
     scene,
     options: [
-      { label: "Promise aggressive timelines to regain confidence quickly", weight: 1, archetype: "Reactive" },
-      { label: "Present a detailed recovery plan with conservative estimates", weight: 2, archetype: "Measured" },
-      { label: "Acknowledge mistakes while inspiring confidence in the team's abilities", weight: 3, archetype: "Resilient" }
+      { label: `Commit to an aggressive 48-hour fix timeline to ${stakeholderRef}, putting the team on overtime`, weight: 1, archetype: "Reactive" },
+      { label: `Propose a conservative 2-week recovery plan to ${stakeholderRef} with thorough testing protocols`, weight: 2, archetype: "Measured" },
+      { label: `Take full personal responsibility to ${stakeholderRef} and outline new processes to prevent future issues`, weight: 3, archetype: "Resilient" }
     ]
   }
 }
 
-function extractProductName(projectContext: string): string {
-  // Extract a natural product name from the context
-  const words = projectContext.toLowerCase().split(' ')
-  if (words.includes('app') || words.includes('application')) return 'app'
-  if (words.includes('dashboard') || words.includes('platform')) return 'platform'
-  if (words.includes('tracker') || words.includes('tool')) return 'tool'
-  if (words.includes('system') || words.includes('service')) return 'system'
+function parseProjectContext(projectContext: string): string {
+  // Smart parsing to make natural-sounding references
+  const lower = projectContext.toLowerCase()
+  
+  // Common patterns
+  if (lower.includes('edtech') || lower.includes('education')) return 'education platform'
+  if (lower.includes('dashboard')) return 'analytics dashboard'
+  if (lower.includes('mobile app') || lower.includes('app')) return 'mobile application'
+  if (lower.includes('website') || lower.includes('landing')) return 'website'
+  if (lower.includes('platform')) return 'platform'
+  if (lower.includes('tool') || lower.includes('tracker')) return 'tool'
+  if (lower.includes('system') || lower.includes('service')) return 'system'
+  if (lower.includes('ai') || lower.includes('ml')) return 'AI-powered solution'
+  
+  // Extract key noun if possible
+  const words = lower.split(' ')
+  const lastWord = words[words.length - 1]
+  if (['dashboard', 'platform', 'app', 'tool', 'system', 'website', 'portal'].includes(lastWord)) {
+    return lastWord
+  }
+  
   return 'product'
 }
 
-function extractProductType(projectContext: string): string {
-  // Return a natural description of the product type
-  if (projectContext.toLowerCase().includes('ai')) return 'AI-powered solution'
-  if (projectContext.toLowerCase().includes('mobile')) return 'mobile application'
-  if (projectContext.toLowerCase().includes('web')) return 'web platform'
-  if (projectContext.toLowerCase().includes('dashboard')) return 'analytics dashboard'
-  return 'digital product'
+function parseStakeholder(stakeholder: string): string {
+  // Smart parsing to make natural-sounding references
+  const lower = stakeholder.toLowerCase()
+  
+  // Handle "the CEO, John" or "John, the CEO" patterns
+  if (lower.includes('ceo')) {
+    // Extract name by removing CEO references more carefully
+    let name = stakeholder
+      .replace(/,?\s*the\s+ceo\s*,?/gi, '')  // Remove "the CEO"
+      .replace(/,?\s*ceo\s*,?/gi, '')        // Remove "CEO"
+      .replace(/^\s*,\s*|\s*,\s*$/g, '')     // Remove leading/trailing commas
+      .trim()
+    
+    return name ? `${name}, your CEO` : 'your CEO'
+  }
+  
+  // Handle customer references
+  if (lower.includes('customer')) return 'your customers'
+  if (lower.includes('client')) return 'your clients'
+  if (lower.includes('user')) return 'your users'
+  
+  // Handle other titles
+  if (lower.includes('head of sales') || lower.includes('sales director')) return 'your head of sales'
+  if (lower.includes('head of marketing') || lower.includes('marketing director')) return 'your head of marketing'
+  if (lower.includes('head of product') || lower.includes('product director')) return 'your head of product'
+  if (lower.includes('cto')) return 'your CTO'
+  if (lower.includes('founder')) return 'your founder'
+  if (lower.includes('manager')) return 'your manager'
+  if (lower.includes('director')) return 'your director'
+  if (lower.includes('vp')) return 'your VP'
+  
+  // If it's just a name, assume it's important
+  const words = stakeholder.trim().split(' ')
+  if (words.length <= 2 && !lower.includes('the')) {
+    return `${stakeholder}, your key stakeholder`
+  }
+  
+  return stakeholder
 }
 
 // AI integration for personalized choice generation using Claude
 export async function generateTurnWithAI(
   turnNumber: number,
-  projectContext: string,
+  context: SimulationContext,
   previousChoices: UserChoice[]
 ): Promise<Turn> {
   
-  const prompt = buildPersonalizedPrompt(turnNumber, projectContext, previousChoices)
+  // Turn 1 uses mock data with slight personalization
+  if (turnNumber === 1) {
+    return getMockTurn(1, context, previousChoices)
+  }
+  
+  const prompt = buildPersonalizedPrompt(turnNumber, context, previousChoices)
   
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    console.log('🤖 Calling Claude API for turn', turnNumber, 'with context:', context)
+    console.log('🤖 Prompt being sent:', prompt.substring(0, 200) + '...')
+    
+    const response = await fetch('/api/generate-turn', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify({
-        model: 'claude-3-sonnet-20240229',
-        max_tokens: 500,
-        temperature: 0.8,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
-      })
+      body: JSON.stringify({ prompt })
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Claude API error: ${response.status} - ${errorText}`)
+      const errorData = await response.json()
+      throw new Error(`API error: ${response.status} - ${errorData.error}`)
     }
 
-    const data = await response.json()
-    const content = data.content[0].text.trim()
+    const parsedResponse = await response.json()
+    console.log('🤖 Parsed response:', parsedResponse)
     
-    // Clean up any markdown code blocks
-    const jsonString = content.replace(/```json\n?|\n?```/g, '').trim()
-    
-    return JSON.parse(jsonString)
+    return parsedResponse
   } catch (error) {
     console.error('AI generation failed:', error)
     // Fallback to mock data
-    return getMockTurn(turnNumber, projectContext, previousChoices)
+    return getMockTurn(turnNumber, context, previousChoices)
   }
 }
 
-function buildPersonalizedPrompt(turnNumber: number, projectContext: string, previousChoices: UserChoice[]): string {
-  const productName = extractProductName(projectContext)
-  const productType = extractProductType(projectContext)
-  
-  if (turnNumber === 1) {
-    return `You are an expert at creating realistic product management scenarios. Your goal is to write choices that feel personally relevant to this specific PM's situation.
-
-# Task
-Create a JSON response with:
-1. A 2-sentence "scene" about a launch crisis for their ${productType}
-2. Three "options" that feel personally crafted for this specific product context
-
-# Context
-- Product: ${projectContext}
-- Setting: Tech company, 48 hours before launch
-- Crisis: Critical bug affecting user data accuracy, marketing already announced
-
-# Choice Requirements
-Each option must:
-- Feel specific to "${projectContext}" (not generic)
-- Have personality and voice
-- Reflect different PM approaches
-- Include weight (1=reactive, 2=measured, 3=resilient) and archetype
-
-Example format:
-{
-  "scene": "You're **48 hours** away from launching your ${productType}. Your QA team just discovered a **critical bug** that affects user data accuracy. The marketing team has already announced the launch date publicly.",
-  "options": [
-    {"label": "Push the launch anyway - we'll fix it in post-launch patches", "weight": 1, "archetype": "Reactive"},
-    {"label": "Delay the launch by one week to properly fix the issue", "weight": 2, "archetype": "Measured"},
-    {"label": "Call an emergency meeting with engineering to explore quick fixes", "weight": 3, "archetype": "Resilient"}
-  ]
-}
-
-Make the choices feel like they're written FOR this specific product, not generic PM advice.`
-  }
-
+function buildPersonalizedPrompt(turnNumber: number, context: SimulationContext, previousChoices: UserChoice[]): string {
+  const projectRef = parseProjectContext(context.project)
+  const stakeholderRef = parseStakeholder(context.stakeholder)
   const lastChoice = previousChoices[previousChoices.length - 1]
-  const choicePattern = previousChoices.map(c => c.archetype).join(' → ')
   
-  return `You are an expert at creating realistic product management scenarios. Your goal is to write choices that react personally to this PM's decision history.
+  if (turnNumber === 2) {
+    const baseScenario = lastChoice.archetype === 'Reactive' ? 
+      `**Two days post-launch**, your platform is flooding support with angry customer emails about missing data. The support team is overwhelmed and can't keep up with the volume.` :
+      lastChoice.archetype === 'Measured' ? 
+      `After delaying the launch, the team is under **intense pressure** about timelines. A competitor just announced a **similar feature** and everyone's stressed about falling behind.` :
+      `Your engineering team found a clever workaround for the bug, but it requires **rebuilding a core component**. Users are already asking when they can access the new features.`
+    
+    return `Rewrite this internal consequence scenario with personalization.
 
-# Task
-Create a JSON response with:
-1. A 2-sentence "scene" showing consequences of their previous decision
-2. Three "options" that feel personally crafted based on their choice pattern
+# Base scenario to rewrite:
+${baseScenario}
 
-# Context
-- Product: ${projectContext}
-- Their previous choice: "${lastChoice.label}" (${lastChoice.archetype} approach)
-- Their pattern so far: ${choicePattern}
-- Turn: ${turnNumber} of 3 (${turnNumber === 2 ? 'The Confrontation' : 'The Resolution'})
+# Personalize with:
+- Project reference: ${projectRef}
+- Keep the same urgency and specific details
+- Write exactly 2 sentences
+- NO stakeholder involvement yet - this is internal team/user issues only
 
-# Previous Decision Analysis
-${lastChoice.archetype === 'Reactive' ? 
-  `They chose to act quickly/urgently. Show realistic consequences of rushing.` :
-  lastChoice.archetype === 'Measured' ? 
-  `They chose to be methodical/planned. Show realistic consequences of slowing down.` :
-  `They chose to be resilient/creative. Show how their solution led to new challenges.`
-}
+# Return format:
+{
+  "scene": "Your 2-sentence rewrite here",
+  "options": [
+    {"label": "Send an immediate, decisive message to the team about how we're handling this", "weight": 1, "archetype": "Reactive"},
+    {"label": "Take an hour to analyze the full impact before scheduling a coordinated response", "weight": 2, "archetype": "Measured"},
+    {"label": "Draft a calm, reassuring update for the team while exploring alternative solutions", "weight": 3, "archetype": "Resilient"}
+  ]
+}`
+  }
+  
+  // Turn 3
+  const baseClimaxScenario = previousChoices.some(c => c.archetype === 'Reactive') ? 
+    `The **board** is demanding answers about the crisis. Stakeholders are questioning your team's competence. You need to present a path forward that restores confidence.` :
+    `The executive team wants a **final update** on the recovery. Your careful approach has gained some trust, but they need assurance that the product will deliver on its promises.`
+  
+  return `Rewrite this stakeholder confrontation scenario with personalization.
 
-# Choice Requirements
-Each option must:
-- React to their specific choice pattern (${choicePattern})
-- Feel personally relevant to someone who chose "${lastChoice.label}"
-- Include weight (1=reactive, 2=measured, 3=resilient) and archetype
-- Reference the ${productName} naturally
+# Base scenario to rewrite:
+${baseClimaxScenario}
 
-The scene should make them think "wow, this is exactly what would happen if I made that choice."
+# Personalize with:
+- Project reference: ${projectRef}
+- Stakeholder: ${stakeholderRef}
+- Write exactly 2 sentences in SECOND PERSON ("You face...", not "I faced...")
+- Create high-stakes tension about facing the stakeholder directly
 
-Return valid JSON only.`
+# Return format:
+{
+  "scene": "Your 2-sentence rewrite here",
+  "options": [
+    {"label": "Commit to an aggressive 48-hour fix timeline to ${stakeholderRef}, putting the team on overtime", "weight": 1, "archetype": "Reactive"},
+    {"label": "Propose a conservative 2-week recovery plan to ${stakeholderRef} with thorough testing protocols", "weight": 2, "archetype": "Measured"},
+    {"label": "Take full personal responsibility to ${stakeholderRef} and outline new processes to prevent future issues", "weight": 3, "archetype": "Resilient"}
+  ]
+}`
 }
