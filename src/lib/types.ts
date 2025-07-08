@@ -41,7 +41,7 @@ export const PERSONALITY_MATRIX: Record<string, PersonalityResult> = {
     insight:
       "You wait, convene the room, then keep public comments deliberately vague. The group feels managed, not rushed—but ambiguity lingers.",
     whatCanBiteYou:
-      "Vague comments mean no one knows what "finished" looks like.",
+      "Vague comments mean no one knows what \\\"finished\\\" looks like.",
     practicalSuggestion:
       "End every meeting by naming one next step, who does it, and by when."
   },
@@ -680,32 +680,32 @@ export const PERSONALITY_MATRIX: Record<string, PersonalityResult> = {
 export const BEATS: Beat[] = [
   {
     title: "Beat 1 — The DM",
-    scene: "Maya shoots you a quick DM:\n\"OMG this is exploding. Didn't expect this to blow up. Let's talk tomorrow?\"\n\nYour next move:",
+    scene: "Maya shoots you a quick DM:\n\\\"OMG this is exploding. Didn't expect this to blow up. Let's talk tomorrow?\\\"\n\nYour next move:",
     options: [
-      { label: "Heart-react the message, drop a \"wow, wild!\" reply, and wait.", code: "A" },
-      { label: "Ask one innocent question—\"Love it! Did you tag us anywhere?\"—and gauge her response.", code: "B" },
-      { label: "Fire off a voice note congratulating her, then add, \"Hey, overnight credits got weird—shall we sync?\"", code: "C" },
+      { label: "Heart-react the message, drop a \\\"wow, wild!\\\" reply, and wait.", code: "A" },
+      { label: "Ask one innocent question—\\\"Love it! Did you tag us anywhere?\\\"—and gauge her response.", code: "B" },
+      { label: "Fire off a voice note congratulating her, then add, \\\"Hey, overnight credits got weird—shall we sync?\\\"", code: "C" },
       { label: "Screenshot the viral post, send it to Jonah with a single eyeball emoji, and say nothing to Maya yet.", code: "D" }
     ]
   },
   {
     title: "Beat 2 — The Clause", 
-    scene: "Next morning you wake to an email from an indie label's A&R rep, CC'd to you, Maya, and Jonah:\n\"Love the track. Our boilerplate rev-share is 60% lead artist, 40% split among collaborators. Please confirm splits by EOD so we can fast-track release.\"\n\nJonah finally pings you privately:\n\"Bro, Maya's saying we each get 10%. That cool?\"\n\nYour reply to Jonah:",
+    scene: "Next morning you wake to an email from an indie label's A&R rep, CC'd to you, Maya, and Jonah:\n\\\"Love the track. Our boilerplate rev-share is 60% lead artist, 40% split among collaborators. Please confirm splits by EOD so we can fast-track release.\\\"\n\nJonah finally pings you privately:\n\\\"Bro, Maya's saying we each get 10%. That cool?\\\"\n\nYour reply to Jonah:",
     options: [
-      { label: "\"Let's hop on a three-way call with her first.\"", code: "A" },
-      { label: "\"I'm good with 10%. Let's not kill momentum.\"", code: "B" },
-      { label: "\"Nope. We each own a third. I'll draft a counter-proposal.\"", code: "C" },
-      { label: "\"What do you think is fair? I'll back your number.\"", code: "D" }
+      { label: "\\\"Let's hop on a three-way call with her first.\\\"", code: "A" },
+      { label: "\\\"I'm good with 10%. Let's not kill momentum.\\\"", code: "B" },
+      { label: "\\\"Nope. We each own a third. I'll draft a counter-proposal.\\\"", code: "C" },
+      { label: "\\\"What do you think is fair? I'll back your number.\\\"", code: "D" }
     ]
   },
   {
     title: "Beat 3 — The Live Interview",
-    scene: "That afternoon the label books a sudden IG Live to hype the signing. You're still ironing splits in a group chat when the host adds you to the stream—20k viewers and counting.\n\nThe host beams:\n\"So tell us, Maya, how did you craft this track?\"\n\nMaya launches into a polished story that barely references you or Jonah. The host throws you the mic for last remarks.\n\nYou say:",
+    scene: "That afternoon the label books a sudden IG Live to hype the signing. You're still ironing splits in a group chat when the host adds you to the stream—20k viewers and counting.\n\nThe host beams:\n\\\"So tell us, Maya, how did you craft this track?\\\"\n\nMaya launches into a polished story that barely references you or Jonah. The host throws you the mic for last remarks.\n\nYou say:",
     options: [
-      { label: "\"Huge team effort—wait till you hear Jonah's textures on the stems!\" (and pivot spotlight)", code: "A" },
-      { label: "\"Thanks! The track's story is evolving—can't wait to share the full credits soon.\" (cryptic but polite)", code: "B" },
-      { label: "\"Actually, funny thing about credits—Jonah and I co-wrote half the hook. We're ironing splits as we speak.\" (on-air nudge)", code: "C" },
-      { label: "\"Congrats Maya. I'll talk business with the label offline.\" and leave the stream within ten seconds.", code: "D" }
+      { label: "\\\"Huge team effort—wait till you hear Jonah's textures on the stems!\\\" (and pivot spotlight)", code: "A" },
+      { label: "\\\"Thanks! The track's story is evolving—can't wait to share the full credits soon.\\\" (cryptic but polite)", code: "B" },
+      { label: "\\\"Actually, funny thing about credits—Jonah and I co-wrote half the hook. We're ironing splits as we speak.\\\" (on-air nudge)", code: "C" },
+      { label: "\\\"Congrats Maya. I'll talk business with the label offline.\\\" and leave the stream within ten seconds.", code: "D" }
     ]
   }
 ]
