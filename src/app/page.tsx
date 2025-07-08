@@ -4,11 +4,11 @@ import { motion } from 'framer-motion'
 
 export default function Home() {
   const handleGetStarted = () => {
-    window.location.href = '/setup'
+    window.location.href = '/story'
   }
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center p-6">
+    <div className="min-h-screen bg-white flex items-center justify-center p-8">
       <div className="w-full max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -17,11 +17,11 @@ export default function Home() {
           className="text-center space-y-12"
         >
           <div>
-            <h1 className="text-5xl font-bold text-text mb-8 tracking-tight">
-              Leadership Under Pressure
+            <h1 className="text-4xl font-light text-gray-900 mb-8 tracking-wide">
+              The Collab Track That Went Viral
             </h1>
-            <p className="text-2xl text-text-secondary mb-8 font-light">
-              Discover how you make decisions when everything goes wrong
+            <p className="text-xl text-gray-600 mb-8 font-light">
+              Navigate credit disputes when your music goes unexpectedly viral
             </p>
           </div>
 
@@ -29,40 +29,40 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="bg-surface rounded-2xl p-10 shadow-xl border border-gray-100"
+            className="border border-gray-200 rounded-lg p-8"
           >
-            <h2 className="text-3xl font-semibold text-text mb-8">
-              What you'll experience:
+            <h2 className="text-2xl font-light text-gray-900 mb-8 text-center">
+              What you'll navigate:
             </h2>
             
             <div className="space-y-6 text-left">
               <div className="flex items-start">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center mr-4 mt-1">
-                  <span className="text-white font-bold text-sm">1</span>
+                <div className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center mr-4 mt-1">
+                  <span className="text-white font-light text-xs">1</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-text text-lg">The Crisis:</span>
-                  <span className="text-text-secondary ml-2 text-lg">A critical bug is discovered 48 hours before your product launch</span>
+                  <span className="font-medium text-gray-900 text-base">The DM:</span>
+                  <span className="text-gray-600 ml-2 text-base font-light">Your collaborator reaches out after the track explodes</span>
                 </div>
               </div>
               
               <div className="flex items-start">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center mr-4 mt-1">
-                  <span className="text-white font-bold text-sm">2</span>
+                <div className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center mr-4 mt-1">
+                  <span className="text-white font-light text-xs">2</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-text text-lg">The Fallout:</span>
-                  <span className="text-text-secondary ml-2 text-lg">Deal with the immediate consequences of your decision</span>
+                  <span className="font-medium text-gray-900 text-base">The Clause:</span>
+                  <span className="text-gray-600 ml-2 text-base font-light">A record label offers a deal with disputed revenue splits</span>
                 </div>
               </div>
               
               <div className="flex items-start">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center mr-4 mt-1">
-                  <span className="text-white font-bold text-sm">3</span>
+                <div className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center mr-4 mt-1">
+                  <span className="text-white font-light text-xs">3</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-text text-lg">The Confrontation:</span>
-                  <span className="text-text-secondary ml-2 text-lg">Face your most important stakeholder with your leadership approach</span>
+                  <span className="font-medium text-gray-900 text-base">The Live Interview:</span>
+                  <span className="text-gray-600 ml-2 text-base font-light">Handle public credit in front of 20k viewers</span>
                 </div>
               </div>
             </div>
@@ -74,15 +74,15 @@ export default function Home() {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="text-center"
           >
-            <p className="text-text-secondary mb-8 text-lg">
-              Takes 3 minutes • Personalized to your situation • Discover your leadership archetype
+            <p className="text-gray-600 mb-8 text-base font-light">
+              Takes 3 minutes • 64 different personality insights • Discover your collaboration style
             </p>
             
             <button
               onClick={handleGetStarted}
-              className="bg-primary text-white px-10 py-4 text-xl font-semibold rounded-xl hover:bg-blue-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="bg-gray-900 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-800 transition-all duration-200"
             >
-              Get Started
+              Start Story
             </button>
           </motion.div>
         </motion.div>
