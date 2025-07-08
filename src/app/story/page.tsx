@@ -27,7 +27,9 @@ export default function StoryPage() {
           
           <div className="mb-16">
             <AnimatedText 
-              text="You and two friends—**Maya** (producer) and **Jonah** (mix engineer)—have been passing stems back and forth for weeks, polishing a lo-fi track that samples an obscure 1970s spoken-word record. None of you bothered with agreements; it was a fun quarantine experiment.\n\nLate one night, you wake to **300 push notifications**: the track leaked on TikTok, went viral, and is now climbing SoundCloud's charts under Maya's solo account. Somehow the credits read *\"Written & Produced by Maya.\"* Jonah hasn't replied to your texts. Your stomach does cartwheels."
+              text={`You and two friends—**Maya** (producer) and **Jonah** (mix engineer)—have been passing stems back and forth for weeks, polishing a lo-fi track that samples an obscure 1970s spoken-word record. None of you bothered with agreements; it was a fun quarantine experiment.
+
+Late one night, you wake to **300 push notifications**: the track leaked on TikTok, went viral, and is now climbing SoundCloud's charts under Maya's solo account. Somehow the credits read *"Written & Produced by Maya."* Jonah hasn't replied to your texts. Your stomach does cartwheels.`}
               onComplete={() => setTextComplete(true)}
             />
           </div>
