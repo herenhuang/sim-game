@@ -25,6 +25,16 @@ export default function Home() {
             </p>
           </div>
 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="border border-gray-200 rounded-lg p-6"
+          >
+            <p className="text-base font-light text-gray-800 leading-relaxed text-center">
+              Hi Betaworks team! Here's my 4-minute video: <a href="https://youtu.be/sBgVSjPhCf8" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">https://youtu.be/sBgVSjPhCf8</a>
+            </p>
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
