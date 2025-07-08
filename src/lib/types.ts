@@ -19,8 +19,8 @@ export interface PersonalityResult {
   code: string; // 3-letter combination like "ABC"
   archetype: string;
   insight: string;
-  whatCanBiteYou: string;
-  practicalSuggestion: string;
+  whatCanBiteYou?: string; // Optional for now
+  practicalSuggestion?: string; // Optional for now
 }
 
 // The 64 personality matrix from the specification

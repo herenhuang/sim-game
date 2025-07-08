@@ -354,7 +354,7 @@ function ResultsDisplay({ personality, choices, step, onContinue }: {
               What can bite you
             </h3>
             <p className="text-base font-light text-gray-700 leading-relaxed">
-              {personality.whatCanBiteYou}
+              {personality.whatCanBiteYou || "Data being updated..."}
             </p>
           </div>
 
@@ -367,7 +367,7 @@ function ResultsDisplay({ personality, choices, step, onContinue }: {
               One concrete move
             </h3>
             <p className="text-base font-light text-gray-700 leading-relaxed">
-              {personality.practicalSuggestion}
+              {personality.practicalSuggestion || "Data being updated..."}
             </p>
           </div>
         </motion.div>
