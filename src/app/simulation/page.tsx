@@ -173,33 +173,19 @@ function BeatDisplay({ beatData, onChoice, beatNumber, sceneComplete, onSceneCom
           </h1>
         </div>
         
-        <motion.div 
-          className="mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          onAnimationComplete={onSceneComplete}
-        >
-          <div className="text-lg font-light text-gray-800 leading-relaxed whitespace-pre-wrap text-left max-w-xl mx-auto">
-{beatData.scene.split(/(\*\*[^*]+\*\*|\n)/).map((part, index) => {
-              if (part.startsWith('**') && part.endsWith('**')) {
-                const content = part.slice(2, -2)
-                return <span key={index} className="font-medium text-gray-900">{content}</span>
-              }
-              if (part === '\n') {
-                return <br key={index} />
-              }
-              return part
-            })}
-          </div>
-        </motion.div>
+        <div className="mb-16">
+          <AnimatedText 
+            text={beatData.scene}
+            onComplete={onSceneComplete}
+          />
+        </div>
         
         <AnimatePresence>
           {sceneComplete && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
+              transition={{ duration: 0.6 }}
               className="space-y-6"
             >
               {beatData.options.map((choice, index) => (
@@ -207,13 +193,6 @@ function BeatDisplay({ beatData, onChoice, beatNumber, sceneComplete, onSceneCom
                   key={index}
                   onClick={() => onChoice(choice)}
                   className="w-full p-6 text-left bg-white hover:bg-gray-50 rounded-lg border border-gray-200 transition-all duration-200 hover:border-gray-300"
-                  initial={{ opacity: 0, y: -15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
-                    duration: 0.6, 
-                    delay: 0.5 + (index * 0.1), 
-                    ease: "easeOut" 
-                  }}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                 >
@@ -242,7 +221,7 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
         clearInterval(timer)
         onComplete()
       }
-    }, 25) // Faster typing animation
+    }, 15) // Even faster typing animation
 
     return () => clearInterval(timer)
   }, [currentIndex, text, onComplete])
@@ -253,7 +232,7 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         const content = part.slice(2, -2)
-        return <span key={index} className="text-primary font-bold">{content}</span>
+        return <span key={index} className="font-medium text-gray-900">{content}</span>
       }
       if (part === '\n') {
         return <br key={index} />
@@ -263,10 +242,8 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
   }
 
   return (
-    <div className="bg-surface rounded-2xl p-8 shadow-xl border border-gray-100 mb-8">
-      <div className="text-xl font-medium text-text leading-relaxed whitespace-pre-wrap">
-        {parseText(displayedText)}
-      </div>
+    <div className="text-lg font-light text-gray-800 leading-relaxed whitespace-pre-wrap text-left max-w-xl mx-auto">
+      {parseText(displayedText)}
     </div>
   )
 }
