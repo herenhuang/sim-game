@@ -93,12 +93,12 @@ export function getArchetypeFromPath(userPath: string[]): Archetype {
   const momentumCount = userPath.filter(classification => classification === "Momentum").length;
   
   if (momentumCount === 3) {
-    return ARCHETYPES.viral_hustler;
+    return ARCHETYPES.crisis_catalyst;
   } else if (momentumCount === 2) {
-    return ARCHETYPES.calculated_creator;
+    return ARCHETYPES.rapid_strategist;
   } else if (momentumCount === 1) {
-    return ARCHETYPES.principled_artist;
+    return ARCHETYPES.systematic_solver;
   } else {
-    return ARCHETYPES.legal_eagle;
+    return ARCHETYPES.systems_architect;
   }
 }
