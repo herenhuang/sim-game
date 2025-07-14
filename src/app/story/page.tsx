@@ -21,15 +21,19 @@ export default function StoryPage() {
         >
           <div className="text-center mb-12">
             <h1 className="text-2xl font-light text-gray-600 mb-8 tracking-wide">
-              The Setup
+              The 9 AM Catastrophe
             </h1>
           </div>
           
           <div className="mb-16">
             <AnimatedText 
-              text={`You and two friends—**Maya** (producer) and **Jonah** (mix engineer)—have been passing stems back and forth for weeks, polishing a lo-fi track that samples an obscure 1970s spoken-word record. None of you bothered with agreements; it was a fun quarantine experiment.
+              text={`**Project Orion** has been your team's flagship initiative for months. After countless late nights, code reviews, and stakeholder meetings, today is finally launch day. The announcement went live at 9:00 AM sharp.
 
-Late one night, you wake to **300 push notifications**: the track leaked on TikTok, went viral, and is now climbing SoundCloud's charts under Maya's solo account. Somehow the credits read *"Written & Produced by Maya."* Jonah hasn't replied to your texts. Your stomach does cartwheels.`}
+You're watching the real-time analytics when your stomach drops. The main dashboard lights up with **red alerts**. Simultaneously, the #customer-support channel explodes with activity.
+
+A lead support agent tags you directly: **"@here - We're getting flooded with tickets. Users are saying they can't log in to their new accounts after creation. This is a P0 issue."**
+
+The next few minutes will test everything you know about crisis management. How do you handle pressure? Do you act fast or think first? The choices you make will reveal your true problem-solving style.`}
               onComplete={() => setTextComplete(true)}
             />
           </div>
