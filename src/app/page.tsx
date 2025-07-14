@@ -1,10 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
+  const router = useRouter()
+  
   const handleGetStarted = () => {
-    window.location.href = '/story'
+    router.push('/scenarios')
   }
 
   return (
@@ -50,7 +53,7 @@ export default function Home() {
               onClick={handleGetStarted}
               className="bg-gray-900 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-800 transition-all duration-200"
             >
-              Start Story
+              Choose Scenario
             </button>
           </motion.div>
         </motion.div>

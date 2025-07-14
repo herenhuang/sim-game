@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 
-export default function StoryPage() {
+export default function RemixStoryPage() {
   const router = useRouter()
   const [textComplete, setTextComplete] = useState(false)
   
   const handleContinue = () => {
-    router.push('/crisis-simulation')
+    router.push('/remix-simulation')
   }
 
   return (
@@ -23,19 +23,19 @@ export default function StoryPage() {
         >
           <div className="text-center mb-12">
             <h1 className="text-2xl font-light text-gray-600 mb-8 tracking-wide">
-              The 9 AM Catastrophe
+              The Remix Controversy
             </h1>
           </div>
           
           <div className="mb-16">
             <AnimatedText 
-              text={`**Project Orion** has been your team's flagship initiative for months. After countless late nights, code reviews, and stakeholder meetings, today is finally launch day. The announcement went live at 9:00 AM sharp.
+              text={`You and two friends have been working on music together for months. Last night, you decided to remix a **popular song** that's been stuck in your head. You used the original track's audio as the foundation and built something incredible on top of it.
 
-You're watching the real-time analytics when your stomach drops. The main dashboard lights up with **red alerts**. Simultaneously, the #customer-support channel explodes with activity.
+You stayed up until **4 AM** perfecting every beat, every transition. When you posted it online this morning, you never expected what happened next.
 
-A lead support agent tags you directly: **"@here - We're getting flooded with tickets. Users are saying they can't log in to their new accounts after creation. This is a P0 issue."**
+**2 million views.** The comments are exploding. Some people are calling it genius. Others are asking tough questions about **copyright permission**. Your phone won't stop buzzing.
 
-The next few minutes will test everything you know about crisis management. How do you handle pressure? Do you act fast or think first? The choices you make will reveal your true problem-solving style.`}
+This is your moment—but it's also your test. How you handle the next few decisions will determine whether this viral success launches your career or derails it before it starts.`}
               onComplete={() => setTextComplete(true)}
             />
           </div>
