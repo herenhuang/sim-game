@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 
-export default function StoryPage() {
+export default function CrisisStoryPage() {
   const router = useRouter()
   const [textComplete, setTextComplete] = useState(false)
   
   const handleContinue = () => {
-    router.push('/story/crisis-simulation')
+    router.push('/crisis-simulation')
   }
 
   return (

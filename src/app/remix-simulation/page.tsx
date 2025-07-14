@@ -7,7 +7,6 @@ import { SimulationState, HandleTurnResponse, Archetype } from '@/lib/types'
 import { QUESTIONS, INITIAL_SCENE, getArchetypeFromPath } from '@/lib/scenarios/remix'
 
 export default function RemixSimulationPage() {
-  const router = useRouter()
   const [simulationState, setSimulationState] = useState<SimulationState>({
     currentTurn: 1,
     storySoFar: `SCENE: ${INITIAL_SCENE}`,
@@ -172,6 +171,7 @@ function AnimatedText({ text }: { text: string }) {
 }
 
 function ResultsDisplay({ simulationState }: { simulationState: SimulationState }) {
+  const router = useRouter()
   const archetype: Archetype = getArchetypeFromPath(simulationState.userPath)
   
   return (
