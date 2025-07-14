@@ -186,9 +186,15 @@ function ResultsDisplay({ simulationState }: { simulationState: SimulationState 
   const router = useRouter()
   const archetype: Archetype = getArchetypeFromPath(simulationState.userPath)
   
-  // Safety check
+  // Safety check with detailed debugging
   if (!archetype) {
-    console.error('Archetype is undefined for path:', simulationState.userPath)
+    console.error('=== ARCHETYPE DEBUG ===')
+    console.error('Raw userPath:', simulationState.userPath)
+    console.error('userPath length:', simulationState.userPath?.length)
+    console.error('userPath contents:', JSON.stringify(simulationState.userPath))
+    console.error('Momentum count:', simulationState.userPath?.filter(c => c === "Momentum").length)
+    console.error('Method count:', simulationState.userPath?.filter(c => c === "Method").length)
+    console.error('=== END DEBUG ===')
     return <div>Error loading results. Please try again.</div>
   }
   
