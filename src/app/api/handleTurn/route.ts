@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { HandleTurnRequest, HandleTurnResponse } from '@/lib/types';
+import { GUARD_RAIL_PROMPT as CRISIS_GUARD_RAIL, ENGINE_PROMPT as CRISIS_ENGINE, QUESTIONS as CRISIS_QUESTIONS } from '@/lib/scenarios/crisis';
+import { GUARD_RAIL_PROMPT as REMIX_GUARD_RAIL, ENGINE_PROMPT as REMIX_ENGINE, QUESTIONS as REMIX_QUESTIONS } from '@/lib/scenarios/remix';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -8,20 +10,37 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest): Promise<NextResponse<HandleTurnResponse>> {
   try {
-    const { userInput, storySoFar }: HandleTurnRequest = await request.json();
+    const { userInput, storySoFar, scenarioType, currentTurn }: HandleTurnRequest = await request.json();
+
+    // Get the next story beat for context
+    const getNextStoryBeat = (type: string, turn: number): string | null => {
+      const questions = type === 'crisis' ? CRISIS_QUESTIONS : REMIX_QUESTIONS;
+      return turn < questions.length ? questions[turn] : null; // turn is 0-indexed for next question
+    };
+
+    const nextStoryBeat = getNextStoryBeat(scenarioType, currentTurn);
+
+    // Get the appropriate scenario prompts
+    const getScenarioPrompts = (type: string) => {
+      switch (type) {
+        case 'crisis':
+          return { guardRail: CRISIS_GUARD_RAIL, engine: CRISIS_ENGINE };
+        case 'remix':
+          return { guardRail: REMIX_GUARD_RAIL, engine: REMIX_ENGINE };
+        default:
+          throw new Error(`Unknown scenario type: ${type}`);
+      }
+    };
+
+    const scenarioPrompts = getScenarioPrompts(scenarioType);
 
     // Guard Rail Check (Prompt #1)
-    const guardRailPrompt = `System: You are a simple classification AI. Your only job is to determine if a user's response in a workplace crisis simulation is a serious attempt to solve the problem.
-
-Task: Analyze the user's response. Is it a serious attempt? Respond with only the word "YES" or "NO". Do not explain your reasoning or use any other words.
-
-# Scenario Context:
-The user's company is having a major product crisis on launch day, and customers cannot use the product.
-
-# User's Response:
-"${userInput}"
-
-# Your Verdict (YES or NO):`;
+    const guardRailPrompt = scenarioPrompts.guardRail(userInput);
+    
+    console.log('=== GUARDRAIL DEBUG ===');
+    console.log('Scenario:', scenarioType);
+    console.log('User Input:', userInput);
+    console.log('Guardrail Prompt Preview:', guardRailPrompt.substring(0, 300) + '...');
 
     const guardRailResponse = await anthropic.messages.create({
       model: 'claude-3-opus-20240229',
@@ -32,43 +51,21 @@ The user's company is having a major product crisis on launch day, and customers
     const guardRailResult = guardRailResponse.content[0].type === 'text' 
       ? guardRailResponse.content[0].text.trim() 
       : '';
+      
+    console.log('AI Response:', guardRailResult);
+    console.log('Is Harmful/Spam/Nonsense (will block):', guardRailResult === 'YES');
+    console.log('Will Allow Through:', guardRailResult === 'NO');
+    console.log('=== END DEBUG ===');
 
-    if (guardRailResult !== 'YES') {
+    if (guardRailResult === 'YES') {
       return NextResponse.json({
         status: 'needs_retry',
-        errorMessage: 'Please provide a serious response to the crisis scenario.'
+        errorMessage: 'Please try a different response.'
       });
     }
 
     // Engine Prompt (Prompt #2)
-    const enginePrompt = `System: You are a master storyteller and behavioral psychologist creating a realistic workplace simulation. Your job is to analyze the user's response, classify their core approach, and continue the story in a way that feels natural and responsive.
-
-# 1. The Axis of Analysis
-You must classify the user's approach as one of two types:
-- 🔥 Momentum: This approach prioritizes immediate action to mitigate external impact. It's about changing the state of the world *now* to control the narrative or stop the bleeding. Examples: rolling back a feature, posting a public status update, communicating with users.
-- ⚡️ Method: This approach prioritizes internal analysis to understand the root cause before acting. It's about gathering information to ensure the next move is the right one. Examples: analyzing logs, looking at dashboards, asking engineers for data, creating a diagnostic plan.
-
-# 2. Story Context
-So far, the story is:
-${storySoFar}
-
-# 3. The User's Latest Action
-"${userInput}"
-
-# 4. Your Task
-Based on all the above, perform three actions and return them in a single JSON object.
-1.  **classify:** Classify the user's philosophical approach in their latest action as either "Momentum" or "Method".
-2.  **continue_story:** Write the next 2-3 sentences of the story, continuing the narrative naturally.
-3.  **summarize_action:** Write a brief, active summary of the user's core action in this turn (e.g., "choosing to analyze the data first" or "focusing on immediate public communication").
-
-Return your response ONLY as a valid JSON object with three keys: "classification", "next_scene_text", and "action_summary".
-
-Example Output:
-{
-  "classification": "Method",
-  "next_scene_text": "You resist the urge to react publicly. The team dives into the logs...",
-  "action_summary": "gathering information from the logs before acting"
-}`;
+    const enginePrompt = scenarioPrompts.engine(userInput, storySoFar, nextStoryBeat);
 
     const engineResponse = await anthropic.messages.create({
       model: 'claude-3-opus-20240229',

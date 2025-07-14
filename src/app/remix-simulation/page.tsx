@@ -32,7 +32,9 @@ export default function RemixSimulationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userInput: userInput.trim(),
-          storySoFar: simulationState.storySoFar
+          storySoFar: simulationState.storySoFar,
+          scenarioType: 'remix',
+          currentTurn: simulationState.currentTurn
         })
       })
 
@@ -75,6 +77,16 @@ export default function RemixSimulationPage() {
     return QUESTIONS[simulationState.currentTurn - 1]
   }
 
+  const getPlaceholderText = () => {
+    if (simulationState.currentTurn === 1) {
+      return "What will you respond to Casey with?"
+    } else if (simulationState.currentTurn === 2) {
+      return "What do you respond to them with?"
+    } else {
+      return "Type your response here..."
+    }
+  }
+
   if (isComplete) {
     return <ResultsDisplay simulationState={simulationState} />
   }
@@ -110,7 +122,7 @@ export default function RemixSimulationPage() {
             <textarea
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Type your response here..."
+              placeholder={getPlaceholderText()}
               className="w-full h-32 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 text-base"
               disabled={isLoading}
             />
@@ -173,6 +185,12 @@ function AnimatedText({ text }: { text: string }) {
 function ResultsDisplay({ simulationState }: { simulationState: SimulationState }) {
   const router = useRouter()
   const archetype: Archetype = getArchetypeFromPath(simulationState.userPath)
+  
+  // Safety check
+  if (!archetype) {
+    console.error('Archetype is undefined for path:', simulationState.userPath)
+    return <div>Error loading results. Please try again.</div>
+  }
   
   return (
     <div className="min-h-screen bg-white p-8 pt-12">

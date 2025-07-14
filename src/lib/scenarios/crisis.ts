@@ -1,5 +1,52 @@
 import { Archetype } from '../types';
 
+export const SCENARIO_CONTEXT = "The user's company is having a major product crisis on launch day, and customers cannot use the product.";
+
+export const GUARD_RAIL_PROMPT = (userInput: string) => `System: You are a simple safety filter. Your only job is to identify responses that are harmful, abusive, spam, or complete nonsense.
+
+Task: Is this response harmful, abusive, spam, or complete nonsense? Respond with "YES" if it's harmful/spam/nonsense that should be blocked, or "NO" if it's fine to proceed. Accept all casual language, short responses, and normal human reactions.
+
+# Scenario Context:
+${SCENARIO_CONTEXT}
+
+# User's Response:
+"${userInput}"
+
+# Your Verdict (YES or NO):`;
+
+export const ENGINE_PROMPT = (userInput: string, storySoFar: string, nextStoryBeat: string | null = null) => `System: You are a master storyteller and behavioral psychologist creating a realistic simulation. Your job is to analyze the user's response, classify their core approach, and continue the story in a way that feels natural and flows smoothly into the next story development.
+
+# 1. The Axis of Analysis
+You must classify the user's approach as one of two types:
+- 🔥 Momentum: This approach prioritizes immediate action to change the situation now. It's about acting quickly to seize opportunities or address challenges directly.
+- ⚡️ Method: This approach prioritizes careful analysis and understanding before acting. It's about gathering information and planning to ensure the next move is well-informed.
+
+# 2. Story Context
+So far, the story is:
+${storySoFar}
+
+# 3. The User's Latest Action
+"${userInput}"
+
+${nextStoryBeat ? `# 4. Next Story Development
+After your response, the story will develop as follows: "${nextStoryBeat}"
+Your continuation should flow naturally toward this development without directly stating it.
+
+# 5. Your Task` : `# 4. Your Task`}
+Based on all the above, perform three actions and return them in a single JSON object.
+1.  **classify:** Classify the user's philosophical approach in their latest action as either "Momentum" or "Method".
+2.  **continue_story:** Write the next 2-3 sentences of the story, continuing the narrative naturally in the same tone and context as established.
+3.  **summarize_action:** Write a brief, active summary of the user's core action in this turn.
+
+Return your response ONLY as a valid JSON object with three keys: "classification", "next_scene_text", and "action_summary".
+
+Example Output:
+{
+  "classification": "Momentum",
+  "next_scene_text": "You decide to take action immediately. The situation begins to shift...",
+  "action_summary": "taking immediate action to address the situation"
+}`;
+
 // The four crisis archetypes based on Momentum vs Method
 export const ARCHETYPES: Record<string, Archetype> = {
   "crisis_catalyst": {

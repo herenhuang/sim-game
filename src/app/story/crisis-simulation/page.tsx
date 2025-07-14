@@ -13,7 +13,7 @@ export default function CrisisStoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-8">
+    <div className="min-h-screen bg-white p-8 pt-16 flex justify-center">
       <div className="w-full max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -73,7 +73,7 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
         clearInterval(timer)
         onComplete()
       }
-    }, 15) // Fast typing animation
+    }, 5) // Fast typing animation
 
     return () => clearInterval(timer)
   }, [currentIndex, text, onComplete])

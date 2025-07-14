@@ -10,6 +10,8 @@ export interface SimulationState {
 export interface HandleTurnRequest {
   userInput: string;
   storySoFar: string;
+  scenarioType: string;
+  currentTurn: number;
 }
 
 export interface HandleTurnResponse {
