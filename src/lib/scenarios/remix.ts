@@ -2,25 +2,25 @@ import { Archetype } from '../types';
 
 // The four remix archetypes based on Momentum vs Method
 export const ARCHETYPES: Record<string, Archetype> = {
-  "viral_hustler": {
-    name: "The Viral Hustler",
+  "crisis_catalyst": {
+    name: "The Crisis Catalyst",
     emoji: "🔥🔥🔥",
-    flavorText: "You ride the wave when it's hot. Strike while the iron's burning and deal with consequences later."
+    flavorText: "You turn chaos into momentum. When everything's breaking, you're the one who gets it moving again. You have an instinct for triage—you know what needs immediate attention and what can wait. Teams rely on you because you don't freeze under pressure; you channel it into action. Your superpower is creating forward motion when others are paralyzed by uncertainty. Just watch out for burnout—sometimes the fire you're putting out could have been prevented with a bit more planning upfront."
   },
-  "calculated_creator": {
-    name: "The Calculated Creator", 
+  "rapid_strategist": {
+    name: "The Rapid Strategist", 
     emoji: "🔥🔥⚡️",
-    flavorText: "You move fast but cover your bases. Speed with strategy, hype with protection."
+    flavorText: "You move fast but think two steps ahead. Speed with direction. You're the rare person who can act decisively without being reckless—you see the immediate problem AND the bigger picture. Teams love working with you because you keep projects moving while actually making them better. You excel in environments where both urgency and quality matter. Your challenge is communicating your rapid thinking to teammates who need more time to process. Remember: not everyone can keep up with your mental pace."
   },
-  "principled_artist": {
-    name: "The Principled Artist",
+  "systematic_solver": {
+    name: "The Systematic Solver",
     emoji: "⚡️⚡️🔥", 
-    flavorText: "You do things the right way, even when it's slower. Build sustainable success, not flash-in-the-pan fame."
+    flavorText: "You fix the problem and the process that created it. One crisis at a time, you make things better permanently. You have the discipline to resist quick fixes when you know they'll create bigger problems later. Teams appreciate that you don't just put band-aids on issues—you actually solve them. You're building towards something sustainable, not just getting through today. Your weakness? Sometimes the perfect solution takes too long, and good enough would have been better. Learn to recognize when speed trumps perfection."
   },
-  "legal_eagle": {
-    name: "The Legal Eagle",
+  "systems_architect": {
+    name: "The Systems Architect",
     emoji: "⚡️⚡️⚡️",
-    flavorText: "You cross every T and dot every I. Long-term career protection over short-term gains."
+    flavorText: "You build the infrastructure that prevents tomorrow's fires. Long-term thinking, lasting impact. You see patterns others miss and design solutions that scale. While others are fighting today's crisis, you're preventing next month's. Teams benefit enormously from your foresight—the problems that never happen because you anticipated them. Your challenge is staying relevant when the building is actually on fire. Sometimes the team needs you to grab a hose instead of redesigning the sprinkler system. Balance your vision with present needs."
   }
 };
 
