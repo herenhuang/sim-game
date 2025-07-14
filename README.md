@@ -37,7 +37,7 @@ For personalized, AI-generated choices and scenarios:
 
 3. **Add your API key:**
    ```
-   NEXT_PUBLIC_ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
+   ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
    ```
 
 4. **Restart the dev server** to enable AI-powered scenarios
