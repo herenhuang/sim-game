@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SimulationState, HandleTurnResponse, Archetype, QUESTIONS, INITIAL_SCENE, getArchetypeFromPath } from '@/lib/types'
+import { SimulationState, HandleTurnResponse, Archetype } from '@/lib/types'
+import { QUESTIONS, INITIAL_SCENE, getArchetypeFromPath } from '@/lib/scenarios/crisis'
 
 export default function SimulationPage() {
   const [simulationState, setSimulationState] = useState<SimulationState>({
