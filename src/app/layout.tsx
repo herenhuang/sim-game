@@ -12,7 +12,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className="min-h-screen bg-white sm:bg-gray-800 flex justify-center">
+          <div className="w-full sm:max-w-[375px] bg-white sm:rounded-lg sm:shadow-2xl sm:mx-4 sm:my-4 md:mx-0 md:my-8">
+            {children}
+          </div>
+        </div>
+      </body>
     </html>
   )
 }

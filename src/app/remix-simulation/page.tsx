@@ -19,6 +19,7 @@ export default function RemixSimulationPage() {
   const [userInput, setUserInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [currentPage, setCurrentPage] = useState(1) // Track which page of Turn 1 we're on
 
   const handleSubmitInput = async () => {
     if (!userInput.trim()) return
@@ -60,6 +61,7 @@ export default function RemixSimulationPage() {
         setSimulationState(newState)
         setCurrentSceneText(result.nextSceneText)
         setUserInput('')
+        setCurrentPage(1) // Reset page when moving to next turn
 
         // Check if simulation is complete
         if (simulationState.currentTurn === 3) {
@@ -73,7 +75,49 @@ export default function RemixSimulationPage() {
     }
   }
 
+  const getTurn1PageContent = () => {
+    if (currentPage === 1) {
+      return `You and two friends have been making music together for months. Last night, you remixed a popular song that's been stuck in your head. You stayed up until 4AM, perfecting every beat. You posted it online this morning.
+
+It blew up. 2 million views. Comments exploding. Your phone won't stop buzzing.`
+    } else if (currentPage === 2) {
+      return `But there's a problem. You used the original song's audio without permission.
+
+In between the praise, the comments start shifting: "This is genius." "Wait… isn't this copyright infringement?"
+
+Notifications keep flooding in—only now, they carry a different weight.`
+    } else if (currentPage === 3) {
+      return "Casey: \"Should we be worried about this copyright thing?\""
+    }
+    return ""
+  }
+
+  const getTurn2PageContent = () => {
+    if (currentPage === 1) {
+      return currentSceneText // This will be the AI-generated response based on Turn 1 input
+    } else if (currentPage === 2) {
+      return "The situation gets crazier. A major record label DMs you: 'We love your remix. We want to sign you for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?'"
+    }
+    return ""
+  }
+
+  const getTurn3PageContent = () => {
+    if (currentPage === 1) {
+      return currentSceneText // This will be the AI-generated response based on Turn 2 input
+    } else if (currentPage === 2) {
+      return "Plot twist: The original artist's manager emails you. They're not angry - they want to collaborate! But they want to re-record the whole thing 'properly' in a studio. This would take at least two weeks and kill your current viral momentum."
+    }
+    return ""
+  }
+
   const getCurrentQuestion = () => {
+    if (simulationState.currentTurn === 1) {
+      return "" // No question for Turn 1 pages 1 and 2, only page 3 has input
+    } else if (simulationState.currentTurn === 2) {
+      return "" // No question for Turn 2 page 1, only page 2 has input
+    } else if (simulationState.currentTurn === 3) {
+      return "" // No question for Turn 3 page 1, only page 2 has input
+    }
     return QUESTIONS[simulationState.currentTurn - 1]
   }
 
@@ -87,59 +131,85 @@ export default function RemixSimulationPage() {
     }
   }
 
+  const handleNextPage = () => {
+    if (simulationState.currentTurn === 1 && currentPage < 3) {
+      setCurrentPage(currentPage + 1)
+    } else if (simulationState.currentTurn === 2 && currentPage < 2) {
+      setCurrentPage(currentPage + 1)
+    } else if (simulationState.currentTurn === 3 && currentPage < 2) {
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
   if (isComplete) {
     return <ResultsDisplay simulationState={simulationState} />
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <ProgressBar currentTurn={simulationState.currentTurn} />
       
-      <div className="p-8 pt-24">
-        <div className="w-full max-w-2xl mx-auto">
+      <div className="flex-1 flex flex-col p-8 pt-24">
+        <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col">
           <div className="text-center mb-12">
             <h1 className="text-2xl font-light text-gray-600 mb-8 tracking-wide">
               Turn {simulationState.currentTurn} — The Remix Controversy
             </h1>
           </div>
 
-          {/* Scene Text */}
-          <div className="mb-8">
-            <AnimatedText text={currentSceneText} />
+          {/* Scene Text - centered and taking up available space */}
+          <div className="flex-1 flex items-center justify-center">
+            <AnimatedText text={
+              simulationState.currentTurn === 1 
+                ? getTurn1PageContent() + (currentPage === 3 ? "\n\nWhat do you text back?" : "")
+                : simulationState.currentTurn === 2 
+                  ? getTurn2PageContent() + (currentPage === 2 ? "\n\nWhat do you respond to them with?" : "")
+                  : simulationState.currentTurn === 3
+                    ? getTurn3PageContent() + (currentPage === 2 ? "\n\nWhat's your call?" : "")
+                    : currentSceneText
+            } />
           </div>
 
-          {/* Question */}
-          <div className="mb-8">
-            <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-              <p className="text-lg font-medium text-gray-900 mb-4">
-                {getCurrentQuestion()}
-              </p>
-            </div>
-          </div>
+          {/* Bottom section - always at bottom */}
+          <div className="mt-auto">
+            {/* Input Area - only show for Turn 1 page 3, Turn 2 page 2, or Turn 3 page 2 */}
+            {(simulationState.currentTurn === 1 && currentPage === 3) || 
+             (simulationState.currentTurn === 2 && currentPage === 2) || 
+             (simulationState.currentTurn === 3 && currentPage === 2) ? (
+              <div className="space-y-4">
+                <textarea
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  placeholder={getPlaceholderText()}
+                  className="w-full h-32 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 text-base"
+                  disabled={isLoading}
+                />
+                
+                {errorMessage && (
+                  <div className="text-red-600 text-sm">
+                    {errorMessage}
+                  </div>
+                )}
 
-          {/* Input Area */}
-          <div className="space-y-4">
-            <textarea
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder={getPlaceholderText()}
-              className="w-full h-32 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 text-base"
-              disabled={isLoading}
-            />
-            
-            {errorMessage && (
-              <div className="text-red-600 text-sm">
-                {errorMessage}
+                <button
+                  onClick={handleSubmitInput}
+                  disabled={isLoading || !userInput.trim()}
+                  className="w-full bg-gray-900 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Processing...' : 'Submit Response'}
+                </button>
+              </div>
+            ) : (
+              /* Continue button for Turn 1 pages 1-2, Turn 2 page 1, and Turn 3 page 1 - always at bottom */
+              <div className="space-y-4">
+                <button
+                  onClick={handleNextPage}
+                  className="w-full bg-gray-900 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-800 transition-all duration-200"
+                >
+                  Continue
+                </button>
               </div>
             )}
-
-            <button
-              onClick={handleSubmitInput}
-              disabled={isLoading || !userInput.trim()}
-              className="w-full bg-gray-900 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Processing...' : 'Submit Response'}
-            </button>
           </div>
         </div>
       </div>
@@ -176,7 +246,7 @@ function ProgressBar({ currentTurn }: { currentTurn: number }) {
 
 function AnimatedText({ text }: { text: string }) {
   return (
-    <div className="text-lg font-light text-gray-800 leading-relaxed text-left max-w-xl mx-auto">
+    <div className="text-lg font-light text-gray-800 leading-relaxed text-left max-w-2xl mx-auto whitespace-pre-line">
       {text}
     </div>
   )
@@ -199,7 +269,7 @@ function ResultsDisplay({ simulationState }: { simulationState: SimulationState 
   }
   
   return (
-    <div className="min-h-screen bg-white p-8 pt-12">
+    <div className="flex-1 p-8 pt-12">
       <div className="w-full max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
