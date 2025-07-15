@@ -12,9 +12,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <div className="min-h-screen bg-white sm:bg-gray-800 flex justify-center">
-          <div className="w-full sm:max-w-[375px] bg-white sm:rounded-lg sm:shadow-2xl sm:mx-4 sm:my-4 md:mx-0 md:my-8">
+      <body className="overflow-hidden">
+        <div className="h-screen bg-white sm:bg-gray-800 flex justify-center items-center">
+          <div className="w-full sm:max-w-[375px] sm:h-[90vh] h-screen bg-white sm:rounded-lg sm:shadow-2xl overflow-hidden">
             {children}
           </div>
         </div>

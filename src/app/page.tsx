@@ -11,20 +11,20 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-8">
+    <div className="h-full bg-white flex items-center justify-center p-8">
       <div className="w-full max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center space-y-12"
+          className="text-center space-y-8"
         >
           <div>
             <h1 className="text-4xl font-light text-gray-900 mb-8 tracking-wide">
-              What's Your Workstyle?
+              How do you handle chaos?
             </h1>
             <p className="text-xl text-gray-600 mb-8 font-light">
-              Measure your actions, not your answers.
+              When the pressure's on, do you move fast or dive deep?
             </p>
           </div>
 
@@ -35,7 +35,7 @@ export default function Home() {
             className="border border-gray-200 rounded-lg p-6"
           >
             <p className="text-base font-light text-gray-800 leading-relaxed text-center">
-              Hi Betaworks team! Here's my 4-minute video: <a href="https://youtu.be/sBgVSjPhCf8" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">https://youtu.be/sBgVSjPhCf8</a>
+              Play through a mini-scenario. See what your decisions say about you.
             </p>
           </motion.div>
 
@@ -45,15 +45,11 @@ export default function Home() {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="text-center"
           >
-            <p className="text-gray-600 mb-8 text-base font-light">
-              Takes 1 minute • 64 different personality insights • Discover your collaboration style
-            </p>
-            
             <button
               onClick={handleGetStarted}
-              className="bg-gray-900 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-800 transition-all duration-200"
+              className="bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
             >
-              Choose Scenario
+              Start the Simulation
             </button>
           </motion.div>
         </motion.div>
