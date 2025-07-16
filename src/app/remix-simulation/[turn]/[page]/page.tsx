@@ -117,6 +117,14 @@ What do you respond to them with?`
 
       const result: HandleTurnResponse = await response.json()
 
+      console.log('=== API RESPONSE DEBUG ===')
+      console.log('API Result:', result)
+      console.log('Status:', result.status)
+      console.log('Classification:', result.classification)
+      console.log('Action Summary:', result.actionSummary)
+      console.log('Next Scene Text:', result.nextSceneText)
+      console.log('=== END API DEBUG ===')
+
       if (result.status === 'needs_retry') {
         setErrorMessage(result.errorMessage || 'Please try again')
         setIsLoading(false)
@@ -125,6 +133,11 @@ What do you respond to them with?`
 
       if (result.status === 'success' && result.classification && result.actionSummary && result.nextSceneText) {
         const newStorySoFar = `${simulationState.storySoFar}\nUSER'S ACTION: "${userInput.trim()}"\nNARRATIVE CONTINUATION: "${result.nextSceneText}"`
+        
+        console.log('=== NEW STATE DEBUG ===')
+        console.log('Old storySoFar:', simulationState.storySoFar)
+        console.log('New storySoFar:', newStorySoFar)
+        console.log('=== END NEW STATE DEBUG ===')
         
         const newState: SimulationState = {
           currentTurn: turn + 1,
@@ -141,8 +154,14 @@ What do you respond to them with?`
         } else {
           router.push(`/remix-simulation/${turn + 1}/1`)
         }
+      } else {
+        console.log('=== MISSING REQUIRED FIELDS ===')
+        console.log('Missing fields in API response')
+        setErrorMessage('Invalid response from server. Please try again.')
       }
     } catch (error) {
+      console.log('=== NETWORK ERROR ===')
+      console.log('Error:', error)
       setErrorMessage('Network error. Please try again.')
     } finally {
       setIsLoading(false)
