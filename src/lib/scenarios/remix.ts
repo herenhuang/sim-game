@@ -83,7 +83,7 @@ export const QUESTIONS = [
 ];
 
 // Initial scene text
-export const INITIAL_SCENE = "You and two friends created a remix of a popular song. You stayed up all night working on it, and the result is incredible. You posted it online, and it went viral overnight - 2 million views and climbing. But there's a problem: you used the original song's audio without getting permission. The comments are blowing up with both praise and questions about copyright.";
+export const INITIAL_SCENE = "You've been making music in your spare time for the past few months. Last night, you remixed a popular song that's been stuck in your head. You stayed up until 4AM, perfecting every beat. You posted it online this morning. It went viral overnight - 2 million views and climbing. But there's a problem: you used the original song's audio without getting permission. The comments are blowing up with both praise and questions about copyright.";
 
 // Scenario metadata
 export const SCENARIO_INFO = {

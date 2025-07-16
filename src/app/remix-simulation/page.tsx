@@ -45,17 +45,17 @@ export default function RemixSimulationPage() {
   const getTurnPageContent = () => {
     if (currentTurn === 1) {
       if (currentPage === 1) {
-        return `You and two friends have been making music together for months. Last night, you remixed a popular song that's been stuck in your head. You stayed up until 4AM, perfecting every beat. You posted it online this morning.
+        return `You've been making music in your spare time for the past few months. Last night, you remixed a popular song that's been stuck in your head. You stayed up until 4AM, perfecting every beat. You posted it online this morning.
 
 It blew up. 2 million views. Comments exploding. Your phone won't stop buzzing.`
       } else if (currentPage === 2) {
         return `But there's a problem. You used the original song's audio without permission.
 
-In between the praise, the comments start shifting: "This is genius." "Wait... isn't this copyright infringement?"
+In between the praise, the comments start shifting: 'This is genius.' 'Wait... isn't this copyright infringement?'
 
 Notifications keep flooding in—only now, they carry a different weight.`
       } else if (currentPage === 3) {
-        return `Casey: "Should we be worried about this copyright thing?"
+        return `Your friend messages you: 'Yo, you worried about this copyright thing?'
 
 What do you text back?`
       }
@@ -65,7 +65,7 @@ What do you text back?`
         const extracted = simulationState.storySoFar.split('NARRATIVE CONTINUATION: "')[1]?.split('"')[0]
         return extracted || "Loading..."
       } else if (currentPage === 2) {
-        return `The situation gets crazier. A major record label DMs you: 'We love your remix. We want to sign you all for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?'
+        return `The situation gets crazier. A major record label DMs you: 'We love your remix. We want to sign you for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?'
 
 What do you respond to them with?`
       }
