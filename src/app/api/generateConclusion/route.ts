@@ -50,7 +50,7 @@ User's actions: ${userActions.join('. ')}
 
 Write exactly 2 paragraphs showing what happens next. Keep it brief and balanced - if there are initial consequences, show how things ultimately work out or what was learned. End on a neutral or slightly positive note, not doom and gloom.
 
-Remember: YOU made the remix individually, though you're part of a music group with two friends. Focus on YOUR personal consequences and decisions. Mention your friends/bandmates only when relevant to the specific outcome. Keep the tone casual and personal, not overly formal.
+Remember: YOU made the remix individually as a solo music maker. Focus on YOUR personal consequences and decisions. This is about your individual creative journey and choices. Keep the tone casual and personal, not overly formal.
 
 Response format:
 PARAGRAPH1: [~300 chars - immediate outcome]

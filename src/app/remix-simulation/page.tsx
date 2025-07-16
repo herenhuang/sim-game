@@ -24,6 +24,8 @@ export default function RemixSimulationPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [textComplete, setTextComplete] = useState(false)
+  const [isGeneratingConclusion, setIsGeneratingConclusion] = useState(false)
+  const [conclusionReady, setConclusionReady] = useState(false)
 
   // Load simulation state from localStorage on mount
   useEffect(() => {
@@ -81,14 +83,18 @@ What do you respond to them with?`
       }
     } else if (currentTurn === 4) {
       // Conclusion pages
+      if (isGeneratingConclusion) {
+        return "Generating conclusion..."
+      }
+      
       if (currentPage === 1) {
         const conclusionText = localStorage.getItem('remix-conclusion-text') || ''
         const paragraphs = conclusionText.split(/PARAGRAPH\d+:\s*/).filter(p => p.trim())
-        return paragraphs[0]?.trim() || "Generating conclusion..."
+        return paragraphs[0]?.trim() || "Loading conclusion..."
       } else if (currentPage === 2) {
         const conclusionText = localStorage.getItem('remix-conclusion-text') || ''
         const paragraphs = conclusionText.split(/PARAGRAPH\d+:\s*/).filter(p => p.trim())
-        return paragraphs[1]?.trim() || "Generating conclusion..."
+        return paragraphs[1]?.trim() || "Loading conclusion..."
       }
     }
     return ""
@@ -167,9 +173,13 @@ What do you respond to them with?`
         // Move to next turn
         if (currentTurn === 3) {
           // Generate conclusion and move to conclusion pages
-          generateConclusion(newState)
-          setCurrentTurn(4)
-          setCurrentPage(1)
+          setIsGeneratingConclusion(true)
+          generateConclusion(newState).then(() => {
+            setIsGeneratingConclusion(false)
+            setConclusionReady(true)
+            setCurrentTurn(4)
+            setCurrentPage(1)
+          })
         } else {
           setCurrentTurn(currentTurn + 1)
           setCurrentPage(1)
@@ -190,6 +200,10 @@ What do you respond to them with?`
 
   const generateConclusion = async (state: SimulationState) => {
     try {
+      console.log('=== CONCLUSION GENERATION DEBUG ===')
+      console.log('Starting conclusion generation...')
+      console.log('State:', state)
+      
       const response = await fetch('/api/generateConclusion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -200,13 +214,21 @@ What do you respond to them with?`
         })
       })
 
+      console.log('Response status:', response.status)
       const result = await response.json()
+      console.log('Conclusion result:', result)
 
       if (result.status === 'success' && result.conclusionText) {
+        console.log('Conclusion generated successfully, saving to localStorage')
         localStorage.setItem('remix-conclusion-text', result.conclusionText)
+      } else {
+        console.error('Conclusion generation failed:', result)
       }
+      console.log('=== END CONCLUSION DEBUG ===')
     } catch (error) {
+      console.error('=== CONCLUSION ERROR ===')
       console.error('Failed to generate conclusion:', error)
+      console.error('=== END CONCLUSION ERROR ===')
     }
   }
 
