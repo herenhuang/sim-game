@@ -148,6 +148,9 @@ What do you respond to them with?`
 
         setSimulationState(newState)
         
+        // Save state to localStorage immediately before navigation
+        localStorage.setItem('remix-simulation-state', JSON.stringify(newState))
+        
         // Navigate to appropriate next page
         if (turn === 3) {
           router.push('/remix-simulation/conclusion/1')
