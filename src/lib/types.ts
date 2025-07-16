@@ -25,6 +25,7 @@ export interface HandleTurnResponse {
 export interface Archetype {
   name: string;
   emoji: string;
+  subtitle: string;
   flavorText: string;
 }
 

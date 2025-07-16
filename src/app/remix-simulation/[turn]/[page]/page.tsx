@@ -58,9 +58,15 @@ What do you text back?`
     } else if (turn === 2) {
       if (page === 1) {
         // This should show the AI-generated response from Turn 1
-        return simulationState.storySoFar.split('NARRATIVE CONTINUATION: "')[1]?.split('"')[0] || "Loading..."
+        console.log('=== TURN 2 PAGE 1 DEBUG ===')
+        console.log('Full storySoFar:', simulationState.storySoFar)
+        console.log('Split result:', simulationState.storySoFar.split('NARRATIVE CONTINUATION: "'))
+        const extracted = simulationState.storySoFar.split('NARRATIVE CONTINUATION: "')[1]?.split('"')[0]
+        console.log('Extracted text:', extracted)
+        console.log('=== END DEBUG ===')
+        return extracted || "Loading..."
       } else if (page === 2) {
-        return `The situation gets crazier. A major record label DMs you: 'We love your remix. We want to sign you for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?'
+        return `The situation gets crazier. A major record label DMs you: 'We love your remix. We want to sign you all for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?'
 
 What do you respond to them with?`
       }
@@ -71,7 +77,7 @@ What do you respond to them with?`
       } else if (page === 2) {
         return `Plot twist: The original artist's manager emails you. They're not angry - they want to collaborate! But they want to re-record the whole thing 'properly' in a studio. This would take at least two weeks and kill your current viral momentum.
 
-What's your call?`
+What do you respond to them with?`
       }
     }
     return ""
