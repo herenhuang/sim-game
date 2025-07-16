@@ -12,9 +12,9 @@ export default function ScenariosPage() {
     localStorage.removeItem('remix-simulation-state')
     localStorage.removeItem('remix-conclusion-text')
     
-    // Navigate to the first page of the simulation
+    // Navigate to the simulation
     if (scenarioPath === '/remix-simulation') {
-      router.push('/remix-simulation/1/1')
+      router.push('/remix-simulation')
     } else {
       router.push(scenarioPath)
     }
