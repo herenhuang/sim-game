@@ -18,7 +18,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
       return turn < questions.length ? questions[turn] : null; // turn is 0-indexed for next question
     };
 
-    const nextStoryBeat = getNextStoryBeat(scenarioType, currentTurn);
+    // Temporarily disable nextStoryBeat to prevent AI from jumping ahead
+    const nextStoryBeat = null; // getNextStoryBeat(scenarioType, currentTurn);
 
     // Get the appropriate scenario prompts
     const getScenarioPrompts = (type: string) => {
@@ -64,8 +65,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
       });
     }
 
-    // Engine Prompt (Prompt #2)
-    const enginePrompt = scenarioPrompts.engine(userInput, storySoFar, nextStoryBeat);
+    // Engine Prompt (Prompt #2) - Trim context if too long
+    const trimmedStorySoFar = storySoFar.length > 2000 ? 
+      storySoFar.substring(storySoFar.length - 2000) : storySoFar;
+    
+    const enginePrompt = scenarioPrompts.engine(userInput, trimmedStorySoFar, nextStoryBeat);
+
+    console.log('=== ENGINE DEBUG ===');
+    console.log('Story length:', storySoFar.length);
+    console.log('Trimmed story length:', trimmedStorySoFar.length);
+    console.log('Engine prompt length:', enginePrompt.length);
+    console.log('=== END ENGINE DEBUG ===');
 
     const engineResponse = await anthropic.messages.create({
       model: 'claude-3-haiku-20240307',
@@ -92,7 +102,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
     });
 
   } catch (error) {
-    console.error('Error in handleTurn:', error);
+    console.error('=== HANDLE TURN ERROR ===');
+    console.error('Error type:', error?.constructor?.name);
+    console.error('Error message:', error?.message);
+    console.error('Full error:', error);
+    console.error('=== END HANDLE TURN ERROR ===');
+    
     return NextResponse.json({
       status: 'needs_retry',
       errorMessage: 'An error occurred processing your response. Please try again.'
