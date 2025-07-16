@@ -169,27 +169,30 @@ function ProgressBar({ currentPage }: { currentPage: number }) {
 
 function AnimatedText({ text, onComplete }: { text: string, onComplete: () => void }) {
   const [displayedText, setDisplayedText] = useState('')
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentWordIndex, setCurrentWordIndex] = useState(0)
 
   useEffect(() => {
     // Reset animation when text changes
     setDisplayedText('')
-    setCurrentIndex(0)
+    setCurrentWordIndex(0)
   }, [text])
 
   useEffect(() => {
+    const words = text.split(' ')
+    
     const timer = setInterval(() => {
-      if (currentIndex < text.length) {
-        setDisplayedText(text.slice(0, currentIndex + 1))
-        setCurrentIndex(currentIndex + 1)
+      if (currentWordIndex < words.length) {
+        const newText = words.slice(0, currentWordIndex + 1).join(' ')
+        setDisplayedText(newText)
+        setCurrentWordIndex(currentWordIndex + 1)
       } else {
         clearInterval(timer)
         onComplete()
       }
-    }, 20) // Typing speed
+    }, 80) // Word-by-word speed
 
     return () => clearInterval(timer)
-  }, [currentIndex, text, onComplete])
+  }, [currentWordIndex, text, onComplete])
 
   return (
     <div className="text-lg font-light text-gray-800 leading-relaxed text-left max-w-2xl mx-auto whitespace-pre-line">

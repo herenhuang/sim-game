@@ -43,7 +43,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
     console.log('Guardrail Prompt Preview:', guardRailPrompt.substring(0, 300) + '...');
 
     const guardRailResponse = await anthropic.messages.create({
-      model: 'claude-3-opus-20240229',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 10,
       messages: [{ role: 'user', content: guardRailPrompt }]
     });
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
     const enginePrompt = scenarioPrompts.engine(userInput, storySoFar, nextStoryBeat);
 
     const engineResponse = await anthropic.messages.create({
-      model: 'claude-3-opus-20240229',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 500,
       messages: [{ role: 'user', content: enginePrompt }]
     });

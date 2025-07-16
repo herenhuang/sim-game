@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     // Generate conclusion using Claude
     const conclusionResponse = await anthropic.messages.create({
-      model: "claude-3-opus-20240229",
+      model: "claude-3-haiku-20240307",
       max_tokens: 800,
       messages: [
         {
@@ -44,13 +44,13 @@ export async function POST(request: NextRequest) {
 }
 
 function getConclusionPrompt(storySoFar: string, userActions: string[], scenarioType: string): string {
-  return `You are creating a story conclusion. Based on the user's choices, write a short 2-paragraph ending (800 characters max total).
+  return `You are creating a story conclusion. Based on the user's choices, write a short 2-paragraph ending (600 characters max total).
 
 User's actions: ${userActions.join('. ')}
 
-Write exactly 2 paragraphs showing what happens next. Keep it brief and forward-looking. No analysis, just story outcome.
+Write exactly 2 paragraphs showing what happens next. Keep it brief and balanced - if there are initial consequences, show how things ultimately work out or what was learned. End on a neutral or slightly positive note, not doom and gloom.
 
 Response format:
-PARAGRAPH1: [~400 chars]
-PARAGRAPH2: [~400 chars]`
+PARAGRAPH1: [~300 chars - immediate outcome]
+PARAGRAPH2: [~300 chars - how things settle/what you learn/moving forward]`
 }
