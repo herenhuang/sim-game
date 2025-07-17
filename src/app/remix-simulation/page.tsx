@@ -14,7 +14,8 @@ export default function RemixSimulationPage() {
     currentTurn: 1,
     storySoFar: `SCENE: ${INITIAL_SCENE}`,
     userPath: [],
-    userActions: []
+    userActions: [],
+    userResponses: []
   })
   
   // UI state
@@ -164,7 +165,8 @@ What do you respond to them with?`
           currentTurn: currentTurn + 1,
           storySoFar: newStorySoFar,
           userPath: [...simulationState.userPath, result.classification],
-          userActions: [...simulationState.userActions, result.actionSummary]
+          userActions: [...simulationState.userActions, result.actionSummary],
+          userResponses: [...(simulationState.userResponses || []), userInput.trim()]
         }
 
         setSimulationState(newState)
@@ -210,6 +212,7 @@ What do you respond to them with?`
         body: JSON.stringify({
           storySoFar: state.storySoFar,
           userActions: state.userActions,
+          userResponses: state.userResponses || [],
           scenarioType: 'remix'
         })
       })

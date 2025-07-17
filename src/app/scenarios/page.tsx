@@ -44,6 +44,9 @@ export default function ScenariosPage() {
           <div className="space-y-3">
             {AVAILABLE_SCENARIOS.map((scenario, index) => {
               const isRemix = scenario.title.includes('Remix')
+              const isCrisis = scenario.title.includes('Crisis')
+              const isDisabled = isCrisis
+              
               return (
                 <motion.div
                   key={scenario.path}
@@ -62,30 +65,44 @@ export default function ScenariosPage() {
                       ease: "easeInOut" 
                     } : {}
                   }}
-                  className={`border rounded-lg p-3 hover:shadow-xl transition-all duration-200 cursor-pointer ${
-                    isRemix 
-                      ? 'border-orange-300 bg-orange-50 hover:border-orange-400' 
-                      : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
+                  className={`border rounded-lg p-3 transition-all duration-200 ${
+                    isDisabled 
+                      ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-50'
+                      : isRemix 
+                        ? 'border-orange-300 bg-orange-50 hover:border-orange-400 hover:shadow-xl cursor-pointer' 
+                        : 'border-gray-200 hover:border-gray-300 hover:shadow-lg cursor-pointer'
                   }`}
-                  onClick={() => handleScenarioSelect(scenario.path)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  onClick={isDisabled ? undefined : () => handleScenarioSelect(scenario.path)}
+                  whileHover={!isDisabled ? { scale: 1.02 } : {}}
+                  whileTap={!isDisabled ? { scale: 0.98 } : {}}
                 >
                   <h2 className={`text-lg font-light mb-2 ${
-                    isRemix ? 'text-orange-900' : 'text-gray-900'
+                    isDisabled 
+                      ? 'text-gray-400'
+                      : isRemix 
+                        ? 'text-orange-900' 
+                        : 'text-gray-900'
                   }`}>
                     {scenario.title}
                   </h2>
                   <p className={`text-sm font-light leading-relaxed ${
-                    isRemix ? 'text-orange-800' : 'text-gray-600'
+                    isDisabled 
+                      ? 'text-gray-300'
+                      : isRemix 
+                        ? 'text-orange-800' 
+                        : 'text-gray-600'
                   }`}>
                     {scenario.description}
                   </p>
                   <div className="mt-2">
                     <span className={`text-xs font-medium ${
-                      isRemix ? 'text-orange-600' : 'text-gray-500'
+                      isDisabled 
+                        ? 'text-gray-300'
+                        : isRemix 
+                          ? 'text-orange-600' 
+                          : 'text-gray-500'
                     }`}>
-                      Click to start →
+                      {isDisabled ? 'Work In Progress' : 'Click to start →'}
                     </span>
                   </div>
                 </motion.div>

@@ -14,64 +14,111 @@ ${SCENARIO_CONTEXT}
 
 # Your Verdict (YES or NO):`;
 
-export const ENGINE_PROMPT = (userInput: string, storySoFar: string, nextStoryBeat: string | null = null) => `You're an expert in reading people's emotions and motivations in high-pressure creative situations. You understand not just what people say, but HOW they say it - their confidence, fear, excitement, dismissiveness, uncertainty, or bravado.
+export const STORY_PROMPT = (userInput: string, storySoFar: string, currentQuestion: string | null = null) => `You're an expert storyteller who reads people's emotions perfectly. Your only job is to continue their story authentically based on their emotional state and attitude.
 
 # The Situation
-Someone's navigating a viral remix with copyright complications. Every response reveals their personality, emotional state, and approach to risk.
+Someone's navigating a viral remix with copyright complications. They just processed a situation and their response reveals their emotional state and decision-making approach.
 
-# Your Analysis Process
-1. **Read Their Emotional State**: What feeling is behind their words? (confident, anxious, dismissive, excited, conflicted, etc.)
-2. **Identify Their Attitude**: How are they approaching this situation? (cautious, reckless, thoughtful, impulsive, etc.)
-3. **Capture Their Voice**: What does their word choice and tone tell you about who they are?
-4. **Respect Their Energy**: Match the emotional rhythm they're setting
-
-# Story Context
+# Story Context So Far
 ${storySoFar}
+
+${currentQuestion ? `# Current Situation They're Responding To
+${currentQuestion}
+
+` : ''}# Their Internal Response/Thoughts
+"${userInput}"
+
+# Your Task: Read Their Emotion & Continue Their Story
+
+**Key Understanding**: The user input above represents the protagonist's internal thoughts and feelings about the situation. You need to write what they DO next based on that emotional state.
+
+**Emotional Intelligence**: Pay careful attention to:
+- **Hedging language** ("I don't think", "maybe", "kind of") = uncertainty, not confidence
+- **Collaborative cues** ("we can do that", "let's work together") = partnership-seeking
+- **Help-seeking** ("can you help") = wanting guidance
+- **Tentative language** = cautious approach, not dismissiveness
+
+**Story Continuation**: Write what the protagonist naturally DOES next based on their actual emotional state. Show their immediate reaction and mental state, NOT future actions or next steps.
+
+**Voice**: Write in second person ("you") as a neutral narrator. EXACTLY 2 sentences that capture their current moment.
+
+**Critical Constraints**: 
+- Focus on IMMEDIATE reaction to the current situation only
+- Do NOT write actions that anticipate future scenarios  
+- Do NOT write them taking steps toward next challenges
+- Stay in the present moment of their emotional response
+
+Return ONLY the story text - no JSON, no explanations, just the continuation of their story.`;
+
+export const CLASSIFICATION_PROMPT = (userInput: string) => `You are analyzing someone's response style to determine their approach type. Focus ONLY on their original words - ignore any story continuation.
 
 # Their Response
 "${userInput}"
 
-# Response Requirements
+# Classification Task
+Based on their actual words and tone, which approach do they lean toward?
 
-**Emotional Intelligence**: Your continuation must acknowledge the specific feeling/attitude they expressed. If they sound worried, show you heard that worry. If they sound cocky, reflect that energy back.
+**Momentum**: Acting quickly, trusting instincts, seizing the moment, taking risks
+**Method**: Wanting to think it through, gathering information, being cautious, planning ahead
 
-**Story Narration (NOT Advice)**: You are writing THEIR story, not giving advice. Don't say "I think you should..." or "My advice is...". Instead, write what THEY do next based on their mindset.
+**Important**: Base this ONLY on their original response. Look for:
+- Language certainty vs uncertainty  
+- Action orientation vs planning orientation
+- Risk tolerance vs caution
+- Individual decision-making vs seeking input/collaboration
 
-**Natural Reaction**: Write what would naturally happen next to someone with THAT specific emotional state. Show their actions and internal experience.
+Return ONLY: "Momentum" or "Method"`;
 
-**Voice**: Write in second person ("you") as a neutral narrator telling their story. You're not a friend giving advice - you're continuing their narrative.
-
-**Classification**: 
-- 🔥 Momentum: Acting quickly, trusting instincts, seizing the moment, taking risks
-- ⚡️ Method: Wanting to think it through, gathering information, being cautious, planning ahead
-
-**Length**: 2-3 sentences that feel natural - not rushed, not overwritten.
-
-Return ONLY this JSON:
-{
-  "classification": "Momentum" or "Method",
-  "next_scene_text": "Continue their story in a way that shows you truly heard them...",
-  "action_summary": "what they did, reflecting their actual attitude"
-}`;
-
-export const CONCLUSION_PROMPT = (storySoFar: string, userActions: string[]) => `You're wrapping up someone's viral remix story. Write their ending in a casual, authentic way that feels real to the music scene.
+export const CONCLUSION_PROMPT_PAGE1 = (storySoFar: string, userResponses: string[]) => `You're wrapping up the story threads from someone's viral remix journey. Write what actually happened with each thread based on their specific responses.
 
 # Their Journey
-User's choices: ${userActions.join('. ')}
+Turn 1 (Casey's copyright question): "${userResponses[0] || 'No response'}"
+Turn 2 (Record label deadline): "${userResponses[1] || 'No response'}"  
+Turn 3 (Artist collaboration offer): "${userResponses[2] || 'No response'}"
+
+# Your Task
+Write a concise wrap-up that resolves these three threads based on their actual responses:
+- What happened with Casey and the copyright concern?
+- What happened with the record label and their deadline?
+- What happened with the artist collaboration offer?
 
 # Writing Instructions
 - Write in second person ("you") - you're telling THEIR story
 - Keep it casual and conversational, like a friend recapping what happened
-- 2 short paragraphs, about 600 characters total
-- If there are consequences, show how things work out or what was learned
-- End on a realistic but not overly negative note
-- This is about YOUR individual creative journey as a solo music maker
+- MAXIMUM 300 characters total
+- Focus on concrete outcomes, not feelings
+- Reference the specific people/situations (Casey, record label, artist)
 
 # Format
-PARAGRAPH1: [~300 chars - what happened next]
-PARAGRAPH2: [~300 chars - how it settled/what you learned/moving forward]
+CONCLUSION_PAGE1: [~300 chars MAX - what actually happened with the three threads]
 
-Write a natural conclusion to their remix story.`;
+# CRITICAL: Stay under 300 characters or the UI will break. Be very concise!
+
+Write the story resolution.`;
+
+export const CONCLUSION_PROMPT_PAGE2 = (storySoFar: string, userResponses: string[]) => `You're writing the personal reflection for someone's viral remix journey. Focus on what this experience taught them about themselves as a creator.
+
+# Their Journey Context
+Turn 1 response: "${userResponses[0] || 'No response'}"
+Turn 2 response: "${userResponses[1] || 'No response'}"  
+Turn 3 response: "${userResponses[2] || 'No response'}"
+
+# Your Task
+Write a personal reflection about what this experience taught them about themselves and their creative journey.
+
+# Writing Instructions
+- Write in second person ("you") - you're telling THEIR story
+- Keep it casual and conversational, like a friend reflecting
+- MAXIMUM 300 characters total
+- Focus on personal growth, creative insights, moving forward
+- This is about THEIR individual creative journey as a solo music maker
+
+# Format
+CONCLUSION_PAGE2: [~300 chars MAX - personal reflection and moving forward]
+
+# CRITICAL: Stay under 300 characters or the UI will break. Be very concise!
+
+Write the personal reflection.`;
 
 // The four remix archetypes based on Momentum vs Method
 export const ARCHETYPES: Record<string, Archetype> = {

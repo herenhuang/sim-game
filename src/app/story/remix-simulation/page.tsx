@@ -13,14 +13,15 @@ export default function RemixStoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-8 pt-16 flex justify-center">
-      <div className="w-full max-w-2xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="space-y-12"
-        >
+    <div className="h-screen bg-white flex flex-col">
+      <div className="flex-1 flex flex-col p-6 pt-8 justify-center">
+        <div className="w-full max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="space-y-8"
+          >
           <div className="text-center mb-12">
             <h1 className="text-2xl font-light text-gray-600 mb-8 tracking-wide">
               The Remix Controversy
@@ -44,7 +45,7 @@ This is your moment—but it's also your test. How you handle the next few decis
             <div className="text-center">
               <motion.button
                 onClick={handleContinue}
-                className="bg-gray-900 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-800 transition-all duration-200"
+                className="bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6 }}
@@ -94,7 +95,7 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
   }
 
   return (
-    <div className="text-lg font-light text-gray-800 leading-relaxed whitespace-pre-wrap text-left max-w-xl mx-auto">
+    <div className="text-base font-light text-gray-800 leading-relaxed whitespace-pre-wrap text-left max-w-2xl mx-auto">
       {parseText(displayedText)}
     </div>
   )

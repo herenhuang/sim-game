@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { HandleTurnRequest, HandleTurnResponse } from '@/lib/types';
 import { GUARD_RAIL_PROMPT as CRISIS_GUARD_RAIL, ENGINE_PROMPT as CRISIS_ENGINE, QUESTIONS as CRISIS_QUESTIONS } from '@/lib/scenarios/crisis';
-import { GUARD_RAIL_PROMPT as REMIX_GUARD_RAIL, ENGINE_PROMPT as REMIX_ENGINE, QUESTIONS as REMIX_QUESTIONS } from '@/lib/scenarios/remix';
+import { GUARD_RAIL_PROMPT as REMIX_GUARD_RAIL, STORY_PROMPT as REMIX_STORY, CLASSIFICATION_PROMPT as REMIX_CLASSIFICATION, QUESTIONS as REMIX_QUESTIONS } from '@/lib/scenarios/remix';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -12,14 +12,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
   try {
     const { userInput, storySoFar, scenarioType, currentTurn }: HandleTurnRequest = await request.json();
 
-    // Get the next story beat for context
-    const getNextStoryBeat = (type: string, turn: number): string | null => {
+    // Get the current question that the user is responding to
+    const getCurrentQuestion = (type: string, turn: number): string | null => {
       const questions = type === 'crisis' ? CRISIS_QUESTIONS : REMIX_QUESTIONS;
-      return turn < questions.length ? questions[turn] : null; // turn is 0-indexed for next question
+      return turn > 0 && turn <= questions.length ? questions[turn - 1] : null; // turn-1 because they're responding to the previous question
     };
 
-    // Temporarily disable nextStoryBeat to prevent AI from jumping ahead
-    const nextStoryBeat = null; // getNextStoryBeat(scenarioType, currentTurn);
+    const currentQuestion = getCurrentQuestion(scenarioType, currentTurn);
 
     // Get the appropriate scenario prompts
     const getScenarioPrompts = (type: string) => {
@@ -27,7 +26,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
         case 'crisis':
           return { guardRail: CRISIS_GUARD_RAIL, engine: CRISIS_ENGINE };
         case 'remix':
-          return { guardRail: REMIX_GUARD_RAIL, engine: REMIX_ENGINE };
+          return { guardRail: REMIX_GUARD_RAIL, story: REMIX_STORY, classification: REMIX_CLASSIFICATION };
         default:
           throw new Error(`Unknown scenario type: ${type}`);
       }
@@ -65,41 +64,79 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
       });
     }
 
-    // Engine Prompt (Prompt #2) - Trim context if too long
+    // Trim context if too long
     const trimmedStorySoFar = storySoFar.length > 2000 ? 
       storySoFar.substring(storySoFar.length - 2000) : storySoFar;
-    
-    const enginePrompt = scenarioPrompts.engine(userInput, trimmedStorySoFar, nextStoryBeat);
 
     console.log('=== ENGINE DEBUG ===');
     console.log('Story length:', storySoFar.length);
     console.log('Trimmed story length:', trimmedStorySoFar.length);
-    console.log('Engine prompt length:', enginePrompt.length);
     console.log('=== END ENGINE DEBUG ===');
 
-    const engineResponse = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: enginePrompt }]
-    });
+    // Handle different prompt structures
+    if (scenarioType === 'remix') {
+      // Two-step process for remix
+      // Step 1: Story continuation
+      const storyPrompt = scenarioPrompts.story(userInput, trimmedStorySoFar, currentQuestion);
+      
+      const storyResponse = await anthropic.messages.create({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: storyPrompt }]
+      });
 
-    const engineResult = engineResponse.content[0].type === 'text' 
-      ? engineResponse.content[0].text.trim() 
-      : '';
+      const nextSceneText = storyResponse.content[0].type === 'text' 
+        ? storyResponse.content[0].text.trim() 
+        : '';
 
-    let parsedResult;
-    try {
-      parsedResult = JSON.parse(engineResult);
-    } catch (error) {
-      throw new Error('Failed to parse AI response as JSON');
+      // Step 2: Classification  
+      const classificationPrompt = scenarioPrompts.classification(userInput);
+      
+      const classificationResponse = await anthropic.messages.create({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 10,
+        messages: [{ role: 'user', content: classificationPrompt }]
+      });
+
+      const classification = classificationResponse.content[0].type === 'text' 
+        ? classificationResponse.content[0].text.trim() 
+        : '';
+
+      return NextResponse.json({
+        status: 'success',
+        classification: classification,
+        actionSummary: `User responded with a ${classification.toLowerCase()} approach`,
+        nextSceneText: nextSceneText
+      });
+      
+    } else {
+      // Single-step process for crisis (existing logic)
+      const enginePrompt = scenarioPrompts.engine(userInput, trimmedStorySoFar, nextStoryBeat);
+
+      const engineResponse = await anthropic.messages.create({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: enginePrompt }]
+      });
+
+      const engineResult = engineResponse.content[0].type === 'text' 
+        ? engineResponse.content[0].text.trim() 
+        : '';
+
+      let parsedResult;
+      try {
+        parsedResult = JSON.parse(engineResult);
+      } catch (error) {
+        throw new Error('Failed to parse AI response as JSON');
+      }
+
+      return NextResponse.json({
+        status: 'success',
+        classification: parsedResult.classification,
+        actionSummary: parsedResult.action_summary,
+        nextSceneText: parsedResult.next_scene_text
+      });
     }
-
-    return NextResponse.json({
-      status: 'success',
-      classification: parsedResult.classification,
-      actionSummary: parsedResult.action_summary,
-      nextSceneText: parsedResult.next_scene_text
-    });
 
   } catch (error) {
     console.error('=== HANDLE TURN ERROR ===');
