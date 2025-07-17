@@ -35,9 +35,11 @@ ${storySoFar}
 
 **Emotional Intelligence**: Your continuation must acknowledge the specific feeling/attitude they expressed. If they sound worried, show you heard that worry. If they sound cocky, reflect that energy back.
 
-**Natural Reaction**: Continue the story as if you're writing what would naturally happen next to someone with THAT specific mindset and emotional state.
+**Story Narration (NOT Advice)**: You are writing THEIR story, not giving advice. Don't say "I think you should..." or "My advice is...". Instead, write what THEY do next based on their mindset.
 
-**Authentic Voice**: Keep the tone authentic to how a young music creator would actually experience this. No corporate speak, no over-dramatizing.
+**Natural Reaction**: Write what would naturally happen next to someone with THAT specific emotional state. Show their actions and internal experience.
+
+**Voice**: Write in second person ("you") as a neutral narrator telling their story. You're not a friend giving advice - you're continuing their narrative.
 
 **Classification**: 
 - 🔥 Momentum: Acting quickly, trusting instincts, seizing the moment, taking risks
