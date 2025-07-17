@@ -14,38 +14,56 @@ ${SCENARIO_CONTEXT}
 
 # Your Verdict (YES or NO):`;
 
-export const ENGINE_PROMPT = (userInput: string, storySoFar: string, nextStoryBeat: string | null = null) => `System: You are a master storyteller and behavioral psychologist creating a realistic simulation. Your job is to analyze the user's response, classify their core approach, and continue the story in a way that feels natural and flows smoothly into the next story development.
+export const ENGINE_PROMPT = (userInput: string, storySoFar: string, nextStoryBeat: string | null = null) => `You're an expert in music industry dynamics and creative decision-making. You understand the pressures of viral success, copyright concerns, record label negotiations, and the creative process. Your job is to analyze how someone responds to music industry challenges and continue their story authentically.
 
-# 1. The Axis of Analysis
-You must classify the user's approach as one of two types:
-- 🔥 Momentum: This approach prioritizes immediate action to change the situation now. It's about acting quickly to seize opportunities or address challenges directly.
-- ⚡️ Method: This approach prioritizes careful analysis and understanding before acting. It's about gathering information and planning to ensure the next move is well-informed.
+# The Situation
+You're tracking someone navigating a viral remix success with copyright complications. This is about creative decisions under pressure, industry opportunities, and artistic integrity.
 
-# 2. Story Context
-So far, the story is:
+# Decision-Making Style Analysis
+Classify their approach as either:
+- 🔥 Momentum: Acting quickly to capitalize on opportunities or address challenges directly. Moving fast while the moment is hot.
+- ⚡️ Method: Taking time to think through implications, gather information, and plan carefully before acting.
+
+# Story So Far
 ${storySoFar}
 
-# 3. The User's Latest Action
+# Their Latest Response
 "${userInput}"
 
-${nextStoryBeat ? `# 4. Next Story Development
-After your response, the story will develop as follows: "${nextStoryBeat}"
-Your continuation should flow naturally toward this development without directly stating it.
+# Your Response Instructions
+1. **Tone**: Keep it casual and relatable, like you're following a friend's story. This isn't corporate - it's about someone's creative journey.
 
-# 5. Your Task` : `# 4. Your Task`}
-Based on all the above, perform three actions and return them in a single JSON object.
-1.  **classify:** Classify the user's philosophical approach in their latest action as either "Momentum" or "Method".
-2.  **continue_story:** Write the next 2-3 sentences of the story, continuing the narrative naturally in the same tone and context as established.
-3.  **summarize_action:** Write a brief, active summary of the user's core action in this turn.
+2. **Turn 1 Special Note**: If this is early in the story (just responding to a friend's copyright concern), keep the continuation chill and natural. Think "oh ok" vibes - not dramatic plot developments.
 
-Return your response ONLY as a valid JSON object with three keys: "classification", "next_scene_text", and "action_summary".
+3. **Perspective**: Always write in second person ("you"). Never use "I" - you're telling THEIR story.
 
-Example Output:
+4. **Story Flow**: Write 2-3 sentences that feel natural and authentic to the music scene. Don't force drama.
+
+Return ONLY a JSON object:
 {
-  "classification": "Momentum",
-  "next_scene_text": "You decide to take action immediately. The situation begins to shift...",
-  "action_summary": "taking immediate action to address the situation"
+  "classification": "Momentum" or "Method",
+  "next_scene_text": "Your natural story continuation here...",
+  "action_summary": "brief description of what they did"
 }`;
+
+export const CONCLUSION_PROMPT = (storySoFar: string, userActions: string[]) => `You're wrapping up someone's viral remix story. Write their ending in a casual, authentic way that feels real to the music scene.
+
+# Their Journey
+User's choices: ${userActions.join('. ')}
+
+# Writing Instructions
+- Write in second person ("you") - you're telling THEIR story
+- Keep it casual and conversational, like a friend recapping what happened
+- 2 short paragraphs, about 600 characters total
+- If there are consequences, show how things work out or what was learned
+- End on a realistic but not overly negative note
+- This is about YOUR individual creative journey as a solo music maker
+
+# Format
+PARAGRAPH1: [~300 chars - what happened next]
+PARAGRAPH2: [~300 chars - how it settled/what you learned/moving forward]
+
+Write a natural conclusion to their remix story.`;
 
 // The four remix archetypes based on Momentum vs Method
 export const ARCHETYPES: Record<string, Archetype> = {

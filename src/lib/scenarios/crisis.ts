@@ -47,6 +47,25 @@ Example Output:
   "action_summary": "taking immediate action to address the situation"
 }`;
 
+export const CONCLUSION_PROMPT = (storySoFar: string, userActions: string[]) => `You're concluding someone's product crisis story. Write their ending in a professional but authentic way that feels real to startup/business environments.
+
+# Their Journey
+User's choices: ${userActions.join('. ')}
+
+# Writing Instructions
+- Write in second person ("you") - you're telling THEIR story
+- Keep it professional but conversational, like a colleague recapping what happened
+- 2 short paragraphs, about 600 characters total
+- If there are consequences, show how things work out or what was learned
+- End on a realistic but not overly negative note
+- This is about YOUR individual leadership and decision-making
+
+# Format
+PARAGRAPH1: [~300 chars - what happened next]
+PARAGRAPH2: [~300 chars - how it settled/what you learned/moving forward]
+
+Write a natural conclusion to their crisis management story.`;
+
 // The four crisis archetypes based on Momentum vs Method
 export const ARCHETYPES: Record<string, Archetype> = {
   "crisis_catalyst": {

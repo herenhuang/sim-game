@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { CONCLUSION_PROMPT as REMIX_CONCLUSION_PROMPT } from '@/lib/scenarios/remix'
+import { CONCLUSION_PROMPT as CRISIS_CONCLUSION_PROMPT } from '@/lib/scenarios/crisis'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -9,6 +11,9 @@ export async function POST(request: NextRequest) {
   try {
     const { storySoFar, userActions, scenarioType } = await request.json()
 
+    // Get scenario-specific conclusion prompt
+    const conclusionPrompt = getScenarioConclusionPrompt(storySoFar, userActions, scenarioType)
+
     // Generate conclusion using Claude
     const conclusionResponse = await anthropic.messages.create({
       model: "claude-3-haiku-20240307",
@@ -16,7 +21,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "user",
-          content: getConclusionPrompt(storySoFar, userActions, scenarioType)
+          content: conclusionPrompt
         }
       ]
     })
@@ -43,16 +48,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function getConclusionPrompt(storySoFar: string, userActions: string[], scenarioType: string): string {
-  return `You are creating a story conclusion. Based on the user's choices, write a short 2-paragraph ending (600 characters max total).
-
-User's actions: ${userActions.join('. ')}
-
-Write exactly 2 paragraphs showing what happens next. Keep it brief and balanced - if there are initial consequences, show how things ultimately work out or what was learned. End on a neutral or slightly positive note, not doom and gloom.
-
-Remember: YOU made the remix individually as a solo music maker. Focus on YOUR personal consequences and decisions. This is about your individual creative journey and choices. Keep the tone casual and personal, not overly formal.
-
-Response format:
-PARAGRAPH1: [~300 chars - immediate outcome]
-PARAGRAPH2: [~300 chars - how things settle/what you learn/moving forward]`
+function getScenarioConclusionPrompt(storySoFar: string, userActions: string[], scenarioType: string): string {
+  switch (scenarioType) {
+    case 'remix':
+      return REMIX_CONCLUSION_PROMPT(storySoFar, userActions)
+    case 'crisis':
+      return CRISIS_CONCLUSION_PROMPT(storySoFar, userActions)
+    default:
+      throw new Error(`Unknown scenario type: ${scenarioType}`)
+  }
 }
