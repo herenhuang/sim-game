@@ -44,7 +44,7 @@ export default function ScenariosPage() {
           <div className="space-y-3">
             {AVAILABLE_SCENARIOS.map((scenario, index) => {
               const isRemix = scenario.title.includes('Remix')
-              const isCrisis = scenario.title.includes('Crisis')
+              const isCrisis = scenario.path === '/crisis-simulation'
               const isDisabled = isCrisis
               
               return (

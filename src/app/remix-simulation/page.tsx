@@ -83,19 +83,14 @@ What do you respond to them with?`
 What do you respond to them with?`
       }
     } else if (currentTurn === 4) {
-      // Conclusion pages
+      // Conclusion page
       if (isGeneratingConclusion) {
         return "Generating conclusion..."
       }
       
       if (currentPage === 1) {
         const conclusionText = localStorage.getItem('remix-conclusion-text') || ''
-        const paragraphs = conclusionText.split(/PARAGRAPH\d+:\s*/).filter(p => p.trim())
-        return paragraphs[0]?.trim() || "Loading conclusion..."
-      } else if (currentPage === 2) {
-        const conclusionText = localStorage.getItem('remix-conclusion-text') || ''
-        const paragraphs = conclusionText.split(/PARAGRAPH\d+:\s*/).filter(p => p.trim())
-        return paragraphs[1]?.trim() || "Loading conclusion..."
+        return conclusionText || "Loading conclusion..."
       }
     }
     return ""
@@ -305,7 +300,7 @@ What do you respond to them with?`
                   transition={{ duration: 0.6 }}
                   className="space-y-4"
                 >
-                  {currentTurn === 4 && currentPage === 2 ? (
+                  {currentTurn === 4 && currentPage === 1 ? (
                     <button
                       onClick={handleUnlockArchetype}
                       className="w-full bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"

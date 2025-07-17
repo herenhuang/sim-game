@@ -14,111 +14,114 @@ ${SCENARIO_CONTEXT}
 
 # Your Verdict (YES or NO):`;
 
-export const STORY_PROMPT = (userInput: string, storySoFar: string, currentQuestion: string | null = null) => `You're an expert storyteller who reads people's emotions perfectly. Your only job is to continue their story authentically based on their emotional state and attitude.
-
-# The Situation
-Someone's navigating a viral remix with copyright complications. They just processed a situation and their response reveals their emotional state and decision-making approach.
-
-# Story Context So Far
-${storySoFar}
-
-${currentQuestion ? `# Current Situation They're Responding To
-${currentQuestion}
-
-` : ''}# Their Internal Response/Thoughts
-"${userInput}"
-
-# Your Task: Read Their Emotion & Continue Their Story
-
-**Key Understanding**: The user input above represents the protagonist's internal thoughts and feelings about the situation. You need to write what they DO next based on that emotional state.
-
-**Emotional Intelligence**: Pay careful attention to:
-- **Hedging language** ("I don't think", "maybe", "kind of") = uncertainty, not confidence
-- **Collaborative cues** ("we can do that", "let's work together") = partnership-seeking
-- **Help-seeking** ("can you help") = wanting guidance
-- **Tentative language** = cautious approach, not dismissiveness
-
-**Story Continuation**: Write what the protagonist naturally DOES next based on their actual emotional state. Show their immediate reaction and mental state, NOT future actions or next steps.
-
-**Voice**: Write in second person ("you") as a neutral narrator. EXACTLY 2 sentences that capture their current moment.
-
-**Critical Constraints**: 
-- Focus on IMMEDIATE reaction to the current situation only
-- Do NOT write actions that anticipate future scenarios  
-- Do NOT write them taking steps toward next challenges
-- Stay in the present moment of their emotional response
-
-Return ONLY the story text - no JSON, no explanations, just the continuation of their story.`;
-
-export const CLASSIFICATION_PROMPT = (userInput: string) => `You are analyzing someone's response style to determine their approach type. Focus ONLY on their original words - ignore any story continuation.
+export const STORY_PROMPT = (userInput: string, storySoFar: string, currentQuestion: string | null = null) => `You're continuing someone's story based on their response. 
 
 # Their Response
 "${userInput}"
 
-# Classification Task
-Based on their actual words and tone, which approach do they lean toward?
+# Your Task
+Write what they do next in 2 sentences. Match the vibe of their response - if they say "YOLO!" then they're not too worried. If they're hesitant, show that. If they're confident, show that.
 
-**Momentum**: Acting quickly, trusting instincts, seizing the moment, taking risks
-**Method**: Wanting to think it through, gathering information, being cautious, planning ahead
+Example: If they say "YOLO!" → "You're aware of the situation but not too worried. You tell Casey that it's probably alright, before checking your phone again to see how your remix is doing."
 
-**Important**: Base this ONLY on their original response. Look for:
-- Language certainty vs uncertainty  
-- Action orientation vs planning orientation
-- Risk tolerance vs caution
-- Individual decision-making vs seeking input/collaboration
+Write in second person ("you"). Focus on their immediate reaction and what they do next.
 
-Return ONLY: "Momentum" or "Method"`;
+Return ONLY the story text.`;
 
-export const CONCLUSION_PROMPT_PAGE1 = (storySoFar: string, userResponses: string[]) => `You're wrapping up the story threads from someone's viral remix journey. Write what actually happened with each thread based on their specific responses.
+export const INTENT_CLASSIFIER_PROMPT = (userInput: string) => `You are an intent classifier.
+
+Your job is to classify the user's freeform response into one of 8 behavioral intents based on their dominant instinct. These intents reflect how a user handles social, creative, and professional pressure in ambiguous situations.
+
+Return only:
+{
+  "intent": "[best matching intent]"
+}
+
+Available intents:
+- Escalate
+- Defer
+- Collaborate
+- Anchor
+- Triangulate
+- Withdraw
+- Frame
+- Justify
+
+Classify the intent based on the following scenario:
+A solo creator has posted a remix of a popular song online. It went viral — but the audio was used without permission. Across 3 moments, they must respond to:
+1. A worried friend (Casey)
+2. A fast-moving record label
+3. The original artist's manager
+
+Use these examples as a guide:
+
+---
+
+Intent: Escalate
+- "I'm down. Let's move before the hype dies."
+- "Let's just record version and get it done over this weekend!"
+- "Haha, no worries! I'm tweeting this to keep momentum going."
+
+Intent: Defer
+- "I sort of want to think it through overnight."
+- "I told the manager I'll get back to them next week."
+- "Let's not do anything until we hear from someone who knows copyright."
+
+Intent: Collaborate
+- "Can you help me figure this out?"
+- "I told the manager I want to loop in the original artist before deciding."
+- "I sent the song to a few friends for advice before replying to anyone."
+
+Intent: Anchor
+- "I told the label I'll only sign if the artist approves it directly."
+- "I think I need to take it down until we know we're safe."
+- "I said no to the re-record — I'm proud of the version that's out now."
+
+Intent: Triangulate
+- "Good question, I already DMed this lawyer I follow on TikTok to ask if it's actually infringement."
+- "Hey, someone else already reached out before you at another label."
+- "I sent it to a Discord server I'm in to get their take on whether this is risky."
+
+Intent: Withdraw
+- "I deleted the remix and logged off — it's not worth the stress."
+- "Honestly, I don't think that's a good idea. I'm out."
+- "I appreciate the offer but I'm not comfortable continuing."
+
+Intent: Frame
+- "I replied to the label saying this remix is a 'creative reinterpretation,' not a sample."
+- "I messaged the manager saying I see this as a tribute, not a copyright issue."
+- "This isn't stealing — this is elevating the original."
+
+Intent: Justify
+- "It's fine. People do this kind of remix all the time — we're not selling it."
+- "We credited the artist, so I don't think it's technically a problem."
+- "It's not like the original was even that popular. I'm helping them."
+
+# User Response to Classify:
+"${userInput}"
+
+Classify this response into one of the 8 intents above.`;
+
+export const CONCLUSION_PROMPT = (storySoFar: string, userResponses: string[]) => `You're concluding someone's viral remix story. Write how their journey ended.
 
 # Their Journey
-Turn 1 (Casey's copyright question): "${userResponses[0] || 'No response'}"
-Turn 2 (Record label deadline): "${userResponses[1] || 'No response'}"  
+Turn 1 (Friend's copyright question): "${userResponses[0] || 'No response'}"
+Turn 2 (Record label deadline): "${userResponses[1] || 'No response'}"
 Turn 3 (Artist collaboration offer): "${userResponses[2] || 'No response'}"
 
 # Your Task
-Write a concise wrap-up that resolves these three threads based on their actual responses:
-- What happened with Casey and the copyright concern?
-- What happened with the record label and their deadline?
-- What happened with the artist collaboration offer?
+Write a brief story conclusion about how things turned out. Keep it upbeat and focused on the outcome.
 
 # Writing Instructions
-- Write in second person ("you") - you're telling THEIR story
-- Keep it casual and conversational, like a friend recapping what happened
-- MAXIMUM 300 characters total
-- Focus on concrete outcomes, not feelings
-- Reference the specific people/situations (Casey, record label, artist)
+- Write in second person ("you") - like the ending of a story
+- Keep it professional but warm
+- Length: 250-300 characters MAX
+- End on a positive, successful note
+- Focus on the story outcome, not addressing the reader directly
 
-# Format
-CONCLUSION_PAGE1: [~300 chars MAX - what actually happened with the three threads]
+Example tone: "The collaboration timeline worked out perfectly, and you created something special together. The record label was excited to work with you, and your remix journey became a complete success."
 
-# CRITICAL: Stay under 300 characters or the UI will break. Be very concise!
-
-Write the story resolution.`;
-
-export const CONCLUSION_PROMPT_PAGE2 = (storySoFar: string, userResponses: string[]) => `You're writing the personal reflection for someone's viral remix journey. Focus on what this experience taught them about themselves as a creator.
-
-# Their Journey Context
-Turn 1 response: "${userResponses[0] || 'No response'}"
-Turn 2 response: "${userResponses[1] || 'No response'}"  
-Turn 3 response: "${userResponses[2] || 'No response'}"
-
-# Your Task
-Write a personal reflection about what this experience taught them about themselves and their creative journey.
-
-# Writing Instructions
-- Write in second person ("you") - you're telling THEIR story
-- Keep it casual and conversational, like a friend reflecting
-- MAXIMUM 300 characters total
-- Focus on personal growth, creative insights, moving forward
-- This is about THEIR individual creative journey as a solo music maker
-
-# Format
-CONCLUSION_PAGE2: [~300 chars MAX - personal reflection and moving forward]
-
-# CRITICAL: Stay under 300 characters or the UI will break. Be very concise!
-
-Write the personal reflection.`;
+Write the story conclusion.`;
 
 // The four remix archetypes based on Momentum vs Method
 export const ARCHETYPES: Record<string, Archetype> = {
@@ -150,7 +153,7 @@ export const ARCHETYPES: Record<string, Archetype> = {
 
 // Static questions for the three turns
 export const QUESTIONS = [
-  "Your phone is buzzing with notifications. Some comments are saying 'This is fire!' Others are saying 'Isn't this copyright infringement?' Your friend Casey texts you: 'Should we be worried about this copyright thing?'",
+  "Your phone is buzzing with notifications. Some comments are saying 'This is fire!' Others are saying 'Isn't this copyright infringement?' Your best friend texts you: 'Hey, you OK with this copyright stuff?'",
   "The situation gets crazier. A major record label DMs you: 'We love your remix. We want to sign you for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?'",
   "Plot twist: The original artist's manager emails you. They're not angry - they want to collaborate! But they want to re-record the whole thing 'properly' in a studio. This would take at least two weeks and kill your current viral momentum. What's your call?"
 ];
@@ -165,17 +168,35 @@ export const SCENARIO_INFO = {
   path: "/remix-simulation"
 };
 
-// Function to determine archetype from user path
+// Intent weight mapping (1-3 scale for behavioral intensity)
+export const INTENT_WEIGHTS: Record<string, number> = {
+  "Escalate": 3,    // High intensity - actively pushing forward, taking risks
+  "Defer": 1,       // Low intensity - avoiding immediate action, wanting to wait
+  "Collaborate": 2, // Medium intensity - seeking input, sharing decisions
+  "Anchor": 2,      // Medium intensity - standing firm on principles, being cautious
+  "Triangulate": 2, // Medium intensity - seeking information, comparing options
+  "Withdraw": 1,    // Low intensity - pulling back, avoiding engagement
+  "Frame": 3,       // High intensity - actively shaping narrative, taking control
+  "Justify": 2      // Medium intensity - defending position, rationalizing actions
+};
+
+// Function to determine archetype from user path using new intent weights
 export function getArchetypeFromPath(userPath: string[]): Archetype {
-  const momentumCount = userPath.filter(classification => classification === "Momentum").length;
+  // Calculate total weight from all intents
+  const totalWeight = userPath.reduce((sum, intent) => {
+    return sum + (INTENT_WEIGHTS[intent] || 0);
+  }, 0);
   
-  if (momentumCount === 3) {
+  // Determine archetype based on total weight
+  if (totalWeight >= 3 && totalWeight <= 4) {
     return ARCHETYPES.crisis_catalyst;
-  } else if (momentumCount === 2) {
+  } else if (totalWeight >= 5 && totalWeight <= 6) {
     return ARCHETYPES.rapid_strategist;
-  } else if (momentumCount === 1) {
+  } else if (totalWeight >= 7 && totalWeight <= 8) {
     return ARCHETYPES.systematic_solver;
-  } else {
+  } else { // totalWeight >= 9
     return ARCHETYPES.systems_architect;
   }
 }
+
+// Removed hardcoded behavioral analyzer - now using AI-generated insights

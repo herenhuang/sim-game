@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { SimulationState, Archetype } from '@/lib/types'
-import { getArchetypeFromPath } from '@/lib/scenarios/remix'
+import { getArchetypeFromPath, INTENT_WEIGHTS } from '@/lib/scenarios/remix'
 
 export default function ResultsPage() {
   const router = useRouter()
@@ -12,33 +12,83 @@ export default function ResultsPage() {
   const [showAnalyzing, setShowAnalyzing] = useState(true)
   const [currentResultsPage, setCurrentResultsPage] = useState(1)
   const [textComplete, setTextComplete] = useState(false)
+  const [conclusionText, setConclusionText] = useState<string | null>(null)
+  const [behavioralDebriefText, setBehavioralDebriefText] = useState<string | null>(null)
 
-  // Load simulation state on mount
+  // Load simulation state and conclusion on mount
   useEffect(() => {
     const savedState = localStorage.getItem('remix-simulation-state')
+    const savedConclusion = localStorage.getItem('remix-conclusion-text')
+    const savedBehavioralDebrief = localStorage.getItem('remix-behavioral-debrief')
+    
     if (savedState) {
       setSimulationState(JSON.parse(savedState))
     } else {
       // If no state found, redirect to start
       router.push('/remix-simulation/1/1')
     }
+    
+    if (savedConclusion) {
+      setConclusionText(savedConclusion)
+    }
+    
+    if (savedBehavioralDebrief) {
+      setBehavioralDebriefText(savedBehavioralDebrief)
+    }
   }, [router])
 
-  // Animation sequence: analyzing -> results page 1
+  // Animation sequence: analyzing -> archetype reveal
   useEffect(() => {
     if (simulationState) {
       // Show analyzing text for 1.5 seconds
       const analyzingTimer = setTimeout(() => {
         setShowAnalyzing(false)
-        setCurrentResultsPage(1)
+        setCurrentResultsPage(1) // Start with archetype reveal
       }, 1500)
 
       return () => clearTimeout(analyzingTimer)
     }
   }, [simulationState])
 
+  // Generate behavioral debrief when moving to archetype reveal (page 1)
+  useEffect(() => {
+    if (currentResultsPage === 1 && simulationState && !behavioralDebriefText) {
+      generateBehavioralDebrief(simulationState)
+    }
+  }, [currentResultsPage, simulationState, behavioralDebriefText])
+
+  const generateBehavioralDebrief = async (state: SimulationState) => {
+    try {
+      const response = await fetch('/api/generateBehavioralDebrief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userResponses: state.userResponses || [],
+          userPath: state.userPath || [],
+          scenarioType: 'remix'
+        })
+      })
+
+      const result = await response.json()
+      if (result.status === 'success' && result.behavioralDebriefText) {
+        setBehavioralDebriefText(result.behavioralDebriefText)
+        localStorage.setItem('remix-behavioral-debrief', result.behavioralDebriefText)
+        
+        // Add to console debugging
+        console.log('\n=== BEHAVIORAL DEBRIEF LOADED ===')
+        console.log('📊 Generated behavioral debrief:')
+        console.log(`"${result.behavioralDebriefText}"`)
+        console.log('=== END BEHAVIORAL DEBRIEF ===\n')
+      } else {
+        console.error('Behavioral debrief generation failed:', result)
+      }
+    } catch (error) {
+      console.error('Error generating behavioral debrief:', error)
+    }
+  }
+
   const handleNextPage = () => {
-    if (currentResultsPage < 3) {
+    if (currentResultsPage < 2) {
       setCurrentResultsPage(currentResultsPage + 1)
       setTextComplete(false)
     }
@@ -56,21 +106,25 @@ export default function ResultsPage() {
     console.error('Raw userPath:', simulationState.userPath)
     console.error('userPath length:', simulationState.userPath?.length)
     console.error('userPath contents:', JSON.stringify(simulationState.userPath))
-    console.error('Momentum count:', simulationState.userPath?.filter(c => c === "Momentum").length)
-    console.error('Method count:', simulationState.userPath?.filter(c => c === "Method").length)
+    console.error('Intent breakdown:', simulationState.userPath?.reduce((counts, intent) => {
+      counts[intent] = (counts[intent] || 0) + 1;
+      return counts;
+    }, {} as Record<string, number>))
+    console.error('Total weight:', simulationState.userPath?.reduce((sum, intent) => sum + (INTENT_WEIGHTS[intent] || 0), 0))
     console.error('=== END DEBUG ===')
     return <div>Error loading results. Please try again.</div>
   }
 
-  // Split flavor text into paragraphs
-  const flavorParagraphs = archetype.flavorText.split('\n\n')
-  
+  // Get page content based on new flow
   const getPageContent = (page: number) => {
     switch (page) {
       case 2:
-        return flavorParagraphs[0] || ''
-      case 3:
-        return flavorParagraphs.slice(1).join('\n\n')
+        // Behavioral debrief page - use AI-generated content
+        if (behavioralDebriefText) {
+          return behavioralDebriefText;
+        }
+        return 'Loading behavioral insights...';
+        
       default:
         return ''
     }
@@ -108,11 +162,11 @@ export default function ResultsPage() {
               transition={{ duration: 0.8 }}
               className="flex-1 flex flex-col"
             >
-              {/* Page 1: Tarot Card Style */}
+              {/* Page 1: Archetype Card */}
               {currentResultsPage === 1 && (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="w-full max-w-sm mx-auto">
-                    {/* Tarot Card */}
+                    {/* Archetype Card */}
                     <div className="bg-white border-4 border-orange-400 rounded-2xl p-8 shadow-xl">
                       {/* Large Emoji */}
                       <div className="text-center mb-6">
@@ -143,22 +197,65 @@ export default function ResultsPage() {
                 </div>
               )}
 
-              {/* Pages 2 & 3: Text Content */}
-              {(currentResultsPage === 2 || currentResultsPage === 3) && (
-                <div className="flex-1 flex flex-col justify-center max-w-2xl mx-auto">
-                  {/* Archetype Title Header */}
-                  <div className="text-center mb-6">
+              {/* This section was causing duplicates - removed */}
+              {false && (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="w-full max-w-sm mx-auto">
+                    {/* Archetype Card */}
+                    <div className="bg-white border-4 border-orange-400 rounded-2xl p-8 shadow-xl">
+                      {/* Large Emoji */}
+                      <div className="text-center mb-6">
+                        <div className="text-6xl mb-4">{archetype.emoji}</div>
+                      </div>
+                      
+                      {/* Archetype Name */}
+                      <h1 className="text-xl font-medium text-gray-900 text-center mb-4">
+                        {archetype.name}
+                      </h1>
+                      
+                      {/* Subtitle */}
+                      <p className="text-sm font-light text-gray-600 text-center leading-relaxed">
+                        {archetype.subtitle}
+                      </p>
+                    </div>
+                    
+                    {/* Continue Button */}
+                    <div className="mt-8 text-center">
+                      <button
+                        onClick={handleNextPage}
+                        className="bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Page 2: Behavioral Debrief */}
+              {currentResultsPage === 2 && (
+                <div className="flex-1 flex flex-col">
+                  {/* Page Title Header */}
+                  <div className="text-center mb-8 pt-16">
                     <h1 className="text-xl font-medium text-gray-900">
-                      {archetype.emoji} {archetype.name}
+                      📊 Your Decision-Making Patterns
                     </h1>
                   </div>
                   
-                  {/* Content Text */}
-                  <div className="mb-8">
-                    <AnimatedText 
-                      text={getPageContent(currentResultsPage)}
-                      onComplete={() => setTextComplete(true)}
-                    />
+                  {/* Content Text - Full Page Scrollable */}
+                  <div 
+                    className="flex-1 overflow-y-auto px-6 pb-8"
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#d1d5db transparent'
+                    }}
+                  >
+                    <div className="max-w-2xl mx-auto">
+                      <AnimatedText 
+                        text={getPageContent(currentResultsPage)}
+                        onComplete={() => setTextComplete(true)}
+                      />
+                    </div>
                   </div>
 
                   {/* Navigation Button */}
@@ -169,26 +266,32 @@ export default function ResultsPage() {
                       transition={{ duration: 0.6 }}
                       className="text-center"
                     >
-                      {currentResultsPage === 2 ? (
+                      <div className="space-y-4">
                         <button
-                          onClick={handleNextPage}
-                          className="bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
+                          onClick={() => {
+                            // Clear saved state and replay the same scenario
+                            localStorage.removeItem('remix-simulation-state')
+                            localStorage.removeItem('remix-conclusion-text')
+                            localStorage.removeItem('remix-behavioral-debrief')
+                            router.push('/remix-simulation')
+                          }}
+                          className="w-full bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
                         >
-                          Continue
+                          Play Again
                         </button>
-                      ) : (
                         <button
                           onClick={() => {
                             // Clear saved state when starting new scenario
                             localStorage.removeItem('remix-simulation-state')
                             localStorage.removeItem('remix-conclusion-text')
+                            localStorage.removeItem('remix-behavioral-debrief')
                             router.push('/scenarios')
                           }}
-                          className="bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
+                          className="w-full bg-gray-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-600 transition-all duration-200"
                         >
                           Try Another Scenario
                         </button>
-                      )}
+                      </div>
                     </motion.div>
                   )}
                 </div>

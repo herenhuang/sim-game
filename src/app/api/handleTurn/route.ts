@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { HandleTurnRequest, HandleTurnResponse } from '@/lib/types';
 import { GUARD_RAIL_PROMPT as CRISIS_GUARD_RAIL, ENGINE_PROMPT as CRISIS_ENGINE, QUESTIONS as CRISIS_QUESTIONS } from '@/lib/scenarios/crisis';
-import { GUARD_RAIL_PROMPT as REMIX_GUARD_RAIL, STORY_PROMPT as REMIX_STORY, CLASSIFICATION_PROMPT as REMIX_CLASSIFICATION, QUESTIONS as REMIX_QUESTIONS } from '@/lib/scenarios/remix';
+import { GUARD_RAIL_PROMPT as REMIX_GUARD_RAIL, STORY_PROMPT as REMIX_STORY, INTENT_CLASSIFIER_PROMPT as REMIX_CLASSIFICATION, QUESTIONS as REMIX_QUESTIONS } from '@/lib/scenarios/remix';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -11,6 +11,11 @@ const anthropic = new Anthropic({
 export async function POST(request: NextRequest): Promise<NextResponse<HandleTurnResponse>> {
   try {
     const { userInput, storySoFar, scenarioType, currentTurn }: HandleTurnRequest = await request.json();
+
+    console.log('\n=== TURN PROCESSING TRANSCRIPT ===')
+    console.log(`🎯 SCENARIO: ${scenarioType} | TURN: ${currentTurn}`)
+    console.log(`📝 USER INPUT: "${userInput}"`)
+    console.log(`📖 STORY SO FAR: ${storySoFar.substring(0, 200)}...`)
 
     // Get the current question that the user is responding to
     const getCurrentQuestion = (type: string, turn: number): string | null => {
@@ -94,18 +99,33 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
       
       const classificationResponse = await anthropic.messages.create({
         model: 'claude-3-haiku-20240307',
-        max_tokens: 10,
+        max_tokens: 50,
         messages: [{ role: 'user', content: classificationPrompt }]
       });
 
-      const classification = classificationResponse.content[0].type === 'text' 
+      const classificationResult = classificationResponse.content[0].type === 'text' 
         ? classificationResponse.content[0].text.trim() 
         : '';
 
+      // Parse the JSON response to get the intent
+      let intent;
+      try {
+        const parsedClassification = JSON.parse(classificationResult);
+        intent = parsedClassification.intent;
+      } catch (error) {
+        console.error('Failed to parse classification JSON:', error);
+        intent = 'Unknown';
+      }
+
+      console.log('\n📥 AI RESPONSES:')
+      console.log(`   🎭 STORY CONTINUATION: "${nextSceneText}"`)
+      console.log(`   🧠 INTENT CLASSIFICATION: ${intent}`)
+      console.log('\n=== END TURN TRANSCRIPT ===\n')
+
       return NextResponse.json({
         status: 'success',
-        classification: classification,
-        actionSummary: `User responded with a ${classification.toLowerCase()} approach`,
+        classification: intent,
+        actionSummary: `User responded with a ${intent.toLowerCase()} approach`,
         nextSceneText: nextSceneText
       });
       

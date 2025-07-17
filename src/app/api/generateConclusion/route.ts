@@ -9,10 +9,23 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const { storySoFar, userActions, scenarioType } = await request.json()
+    const { storySoFar, userActions, userResponses, scenarioType } = await request.json()
+
+    console.log('\n=== CONCLUSION GENERATION TRANSCRIPT ===')
+    console.log('📝 USER RESPONSES:')
+    userResponses.forEach((response: string, index: number) => {
+      console.log(`   Turn ${index + 1}: "${response}"`)
+    })
+    console.log('\n📖 STORY SO FAR:')
+    console.log(`   ${storySoFar.substring(0, 200)}...`)
+    console.log('\n🎯 SCENARIO TYPE:', scenarioType)
 
     // Get scenario-specific conclusion prompt
-    const conclusionPrompt = getScenarioConclusionPrompt(storySoFar, userActions, scenarioType)
+    const conclusionPrompt = getScenarioConclusionPrompt(storySoFar, userActions, userResponses, scenarioType)
+    
+    console.log('\n📤 SENDING TO AI:')
+    console.log(`   Prompt length: ${conclusionPrompt.length} characters`)
+    console.log(`   Prompt preview: ${conclusionPrompt.substring(0, 300)}...`)
 
     // Generate conclusion using Claude
     const conclusionResponse = await anthropic.messages.create({
@@ -29,6 +42,12 @@ export async function POST(request: NextRequest) {
     const conclusionText = conclusionResponse.content[0].type === 'text' 
       ? conclusionResponse.content[0].text 
       : ''
+
+    console.log('\n📥 AI RESPONSE:')
+    console.log(`   Response length: ${conclusionText.length} characters`)
+    console.log(`   Generated conclusion:`)
+    console.log(`   "${conclusionText}"`)
+    console.log('\n=== END CONCLUSION TRANSCRIPT ===\n')
 
     if (!conclusionText) {
       throw new Error('Failed to generate conclusion text')
@@ -48,10 +67,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function getScenarioConclusionPrompt(storySoFar: string, userActions: string[], scenarioType: string): string {
+function getScenarioConclusionPrompt(storySoFar: string, userActions: string[], userResponses: string[], scenarioType: string): string {
   switch (scenarioType) {
     case 'remix':
-      return REMIX_CONCLUSION_PROMPT(storySoFar, userActions)
+      return REMIX_CONCLUSION_PROMPT(storySoFar, userResponses || [])
     case 'crisis':
       return CRISIS_CONCLUSION_PROMPT(storySoFar, userActions)
     default:
