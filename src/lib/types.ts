@@ -5,6 +5,7 @@ export interface SimulationState {
   storySoFar: string;
   userPath: string[]; // Array of classifications (e.g. "Momentum" or "Method")
   userActions: string[]; // Array of action summaries
+  userResponses?: string[]; // Array of user's raw responses
 }
 
 export interface HandleTurnRequest {

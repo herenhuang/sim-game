@@ -22,39 +22,40 @@ export default function RemixStoryPage() {
             transition={{ duration: 0.6 }}
             className="space-y-8"
           >
-          <div className="text-center mb-12">
-            <h1 className="text-2xl font-light text-gray-600 mb-8 tracking-wide">
-              The Remix Controversy
-            </h1>
-          </div>
-          
-          <div className="mb-16">
-            <AnimatedText 
-              text={`You and two friends have been working on music together for months. Last night, you decided to remix a **popular song** that's been stuck in your head. You used the original track's audio as the foundation and built something incredible on top of it.
+            <div className="text-center mb-12">
+              <h1 className="text-2xl font-light text-gray-600 mb-8 tracking-wide">
+                The Remix Controversy
+              </h1>
+            </div>
+            
+            <div className="mb-16">
+              <AnimatedText 
+                text={`You and two friends have been working on music together for months. Last night, you decided to remix a **popular song** that's been stuck in your head. You used the original track's audio as the foundation and built something incredible on top of it.
 
 You stayed up until **4 AM** perfecting every beat, every transition. When you posted it online this morning, you never expected what happened next.
 
 **2 million views.** The comments are exploding. Some people are calling it genius. Others are asking tough questions about **copyright permission**. Your phone won't stop buzzing.
 
 This is your moment—but it's also your test. How you handle the next few decisions will determine whether this viral success launches your career or derails it before it starts.`}
-              onComplete={() => setTextComplete(true)}
-            />
-          </div>
-
-          {textComplete && (
-            <div className="text-center">
-              <motion.button
-                onClick={handleContinue}
-                className="bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-              >
-                Continue
-              </motion.button>
+                onComplete={() => setTextComplete(true)}
+              />
             </div>
-          )}
-        </motion.div>
+
+            {textComplete && (
+              <div className="text-center">
+                <motion.button
+                  onClick={handleContinue}
+                  className="bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  Continue
+                </motion.button>
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
     </div>
   )

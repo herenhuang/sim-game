@@ -82,7 +82,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
     if (scenarioType === 'remix') {
       // Two-step process for remix
       // Step 1: Story continuation
-      const storyPrompt = scenarioPrompts.story(userInput, trimmedStorySoFar, currentQuestion);
+      const storyPrompt = (scenarioPrompts as any).story(userInput, trimmedStorySoFar, currentQuestion);
       
       const storyResponse = await anthropic.messages.create({
         model: 'claude-3-haiku-20240307',
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
         : '';
 
       // Step 2: Classification  
-      const classificationPrompt = scenarioPrompts.classification(userInput);
+      const classificationPrompt = (scenarioPrompts as any).classification(userInput);
       
       const classificationResponse = await anthropic.messages.create({
         model: 'claude-3-haiku-20240307',
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
       
     } else {
       // Single-step process for crisis (existing logic)
-      const enginePrompt = scenarioPrompts.engine(userInput, trimmedStorySoFar, nextStoryBeat);
+      const enginePrompt = (scenarioPrompts as any).engine(userInput, trimmedStorySoFar, getCurrentQuestion(scenarioType, currentTurn));
 
       const engineResponse = await anthropic.messages.create({
         model: 'claude-3-haiku-20240307',
