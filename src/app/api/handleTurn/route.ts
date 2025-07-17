@@ -104,7 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
   } catch (error) {
     console.error('=== HANDLE TURN ERROR ===');
     console.error('Error type:', error?.constructor?.name);
-    console.error('Error message:', error?.message);
+    console.error('Error message:', (error as any)?.message || 'No message available');
     console.error('Full error:', error);
     console.error('=== END HANDLE TURN ERROR ===');
     
