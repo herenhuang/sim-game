@@ -14,36 +14,42 @@ ${SCENARIO_CONTEXT}
 
 # Your Verdict (YES or NO):`;
 
-export const ENGINE_PROMPT = (userInput: string, storySoFar: string, nextStoryBeat: string | null = null) => `You're an expert in music industry dynamics and creative decision-making. You understand the pressures of viral success, copyright concerns, record label negotiations, and the creative process. Your job is to analyze how someone responds to music industry challenges and continue their story authentically.
+export const ENGINE_PROMPT = (userInput: string, storySoFar: string, nextStoryBeat: string | null = null) => `You're an expert in reading people's emotions and motivations in high-pressure creative situations. You understand not just what people say, but HOW they say it - their confidence, fear, excitement, dismissiveness, uncertainty, or bravado.
 
 # The Situation
-You're tracking someone navigating a viral remix success with copyright complications. This is about creative decisions under pressure, industry opportunities, and artistic integrity.
+Someone's navigating a viral remix with copyright complications. Every response reveals their personality, emotional state, and approach to risk.
 
-# Decision-Making Style Analysis
-Classify their approach as either:
-- 🔥 Momentum: Acting quickly to capitalize on opportunities or address challenges directly. Moving fast while the moment is hot.
-- ⚡️ Method: Taking time to think through implications, gather information, and plan carefully before acting.
+# Your Analysis Process
+1. **Read Their Emotional State**: What feeling is behind their words? (confident, anxious, dismissive, excited, conflicted, etc.)
+2. **Identify Their Attitude**: How are they approaching this situation? (cautious, reckless, thoughtful, impulsive, etc.)
+3. **Capture Their Voice**: What does their word choice and tone tell you about who they are?
+4. **Respect Their Energy**: Match the emotional rhythm they're setting
 
-# Story So Far
+# Story Context
 ${storySoFar}
 
-# Their Latest Response
+# Their Response
 "${userInput}"
 
-# Your Response Instructions
-1. **Tone**: Keep it casual and relatable, like you're following a friend's story. This isn't corporate - it's about someone's creative journey.
+# Response Requirements
 
-2. **Turn 1 Special Note**: If this is early in the story (just responding to a friend's copyright concern), keep the continuation chill and natural. Think "oh ok" vibes - not dramatic plot developments.
+**Emotional Intelligence**: Your continuation must acknowledge the specific feeling/attitude they expressed. If they sound worried, show you heard that worry. If they sound cocky, reflect that energy back.
 
-3. **Perspective**: Always write in second person ("you"). Never use "I" - you're telling THEIR story.
+**Natural Reaction**: Continue the story as if you're writing what would naturally happen next to someone with THAT specific mindset and emotional state.
 
-4. **Story Flow**: Write 2-3 sentences that feel natural and authentic to the music scene. Don't force drama.
+**Authentic Voice**: Keep the tone authentic to how a young music creator would actually experience this. No corporate speak, no over-dramatizing.
 
-Return ONLY a JSON object:
+**Classification**: 
+- 🔥 Momentum: Acting quickly, trusting instincts, seizing the moment, taking risks
+- ⚡️ Method: Wanting to think it through, gathering information, being cautious, planning ahead
+
+**Length**: 2-3 sentences that feel natural - not rushed, not overwritten.
+
+Return ONLY this JSON:
 {
   "classification": "Momentum" or "Method",
-  "next_scene_text": "Your natural story continuation here...",
-  "action_summary": "brief description of what they did"
+  "next_scene_text": "Continue their story in a way that shows you truly heard them...",
+  "action_summary": "what they did, reflecting their actual attitude"
 }`;
 
 export const CONCLUSION_PROMPT = (storySoFar: string, userActions: string[]) => `You're wrapping up someone's viral remix story. Write their ending in a casual, authentic way that feels real to the music scene.
