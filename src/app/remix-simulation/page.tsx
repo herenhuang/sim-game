@@ -297,7 +297,7 @@ Notifications keep flooding in—only now, they carry a different weight.`
                               storySoFar: `${simulationState.storySoFar}\n\nNARRATIVE CONTINUATION: "${result.nextSceneText}"`,
                               userPath: [...simulationState.userPath, result.classification],
                               userActions: [...simulationState.userActions, result.actionSummary || ''],
-                              userResponses: [...simulationState.userResponses, message],
+                              userResponses: [...(simulationState.userResponses || []), message],
                               currentTurn: currentTurn
                             }
                             
@@ -367,7 +367,7 @@ Notifications keep flooding in—only now, they carry a different weight.`
                               storySoFar: `${simulationState.storySoFar}\n\nNARRATIVE CONTINUATION: "${result.nextSceneText}"`,
                               userPath: [...simulationState.userPath, result.classification],
                               userActions: [...simulationState.userActions, result.actionSummary || ''],
-                              userResponses: [...simulationState.userResponses, message],
+                              userResponses: [...(simulationState.userResponses || []), message],
                               currentTurn: currentTurn
                             }
                             
@@ -439,7 +439,7 @@ Notifications keep flooding in—only now, they carry a different weight.`
                               storySoFar: `${simulationState.storySoFar}\n\nNARRATIVE CONTINUATION: "${result.nextSceneText}"`,
                               userPath: [...simulationState.userPath, result.classification],
                               userActions: [...simulationState.userActions, result.actionSummary || ''],
-                              userResponses: [...simulationState.userResponses, message],
+                              userResponses: [...(simulationState.userResponses || []), message],
                               currentTurn: currentTurn
                             }
                             
