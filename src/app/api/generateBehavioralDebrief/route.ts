@@ -93,14 +93,22 @@ Turn 3: "${userResponses[2] || 'No response'}" -> ${userPath[2] || 'Unknown'}
 # Your Task
 Analyze their decision pattern in this creative pressure situation. What does their approach reveal about how they handle risk, opportunity, and creative control?
 
+# Analysis Process (INTERNAL - don't show this structure to user):
+First, for each turn, identify what they actually said and what it reveals:
+
+Turn 1: They said "${userResponses[0] || 'No response'}" -> Classification: ${userPath[0] || 'Unknown'} -> This shows: [your analysis]
+Turn 2: They said "${userResponses[1] || 'No response'}" -> Classification: ${userPath[1] || 'Unknown'} -> This reveals: [your analysis]  
+Turn 3: They said "${userResponses[2] || 'No response'}" -> Classification: ${userPath[2] || 'Unknown'} -> This demonstrates: [your analysis]
+
+# Your Response to User:
+Write 2 flowing paragraphs that incorporate your analysis above, without showing the quote structure. Base your insights on what they ACTUALLY said, not assumptions.
+
 # Instructions  
 - Write in second person ("you") - NEVER use "I", "As your analyst", or "Let me"
 - LENGTH REQUIREMENT: EXACTLY 200-250 words. NO MORE THAN 250 WORDS.
-- Count your words carefully. Stop writing when you reach 250 words.
 - Tone: Like a very smart friend - insightful but kind and conversational
-- Focus on their behavioral pattern across all three decisions
-- Be specific about what their choices reveal
-- Make it personal to their path
+- Be accurate about what they actually did in each turn
+- Make it personal to their specific responses
 
-Write 2 short paragraphs analyzing their decision-making patterns. BE CONCISE.`
+Write 2 short paragraphs delivering clean insights based on their actual words. BE CONCISE.`
 }

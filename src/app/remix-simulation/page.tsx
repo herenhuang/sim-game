@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { SimulationState, HandleTurnResponse } from '@/lib/types'
 import { INITIAL_SCENE } from '@/lib/scenarios/remix'
+import IMessageChat from '@/components/iMessageChat'
 
 export default function RemixSimulationPage() {
   const router = useRouter()
@@ -58,9 +59,7 @@ In between the praise, the comments start shifting: 'This is genius.' 'Wait... i
 
 Notifications keep flooding in—only now, they carry a different weight.`
       } else if (currentPage === 3) {
-        return `Your friend messages you: 'Yo, you worried about this copyright thing?'
-
-What do you text back?`
+        return '' // iMessage component will handle this
       }
     } else if (currentTurn === 2) {
       if (currentPage === 1) {
@@ -265,34 +264,106 @@ What do you respond to them with?`
           {textComplete && (
             <div className="mt-auto">
               {isInputPage() ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="space-y-4"
-                >
-                  <textarea
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    placeholder="Type your response here..."
-                    className="w-full h-32 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 text-base"
-                    disabled={isLoading}
-                  />
-                  
-                  {errorMessage && (
-                    <div className="text-red-600 text-sm">
-                      {errorMessage}
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handleSubmitInput}
-                    disabled={isLoading || !userInput.trim()}
-                    className="w-full bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                currentTurn === 1 && currentPage === 3 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="space-y-4"
                   >
-                    {isLoading ? 'Processing...' : 'Submit Response'}
-                  </button>
-                </motion.div>
+                    <IMessageChat
+                      friendMessage="Hey, you worried about that copyright thing?"
+                      onSendMessage={async (message) => {
+                        setUserInput(message)
+                        // Call handleSubmitInput directly with the message
+                        setIsLoading(true)
+                        setErrorMessage('')
+                        
+                        try {
+                          const response = await fetch('/api/handleTurn', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              userInput: message,
+                              storySoFar: simulationState.storySoFar,
+                              scenarioType: 'remix',
+                              currentTurn: currentTurn
+                            })
+                          })
+
+                          const result: HandleTurnResponse = await response.json()
+
+                          if (result.status === 'success' && result.classification && result.nextSceneText) {
+                            const updatedState = {
+                              ...simulationState,
+                              storySoFar: `${simulationState.storySoFar}\n\nNARRATIVE CONTINUATION: "${result.nextSceneText}"`,
+                              userPath: [...simulationState.userPath, result.classification],
+                              userActions: [...simulationState.userActions, result.actionSummary || ''],
+                              userResponses: [...simulationState.userResponses, message],
+                              currentTurn: currentTurn
+                            }
+                            
+                            setSimulationState(updatedState)
+                            setUserInput('')
+
+                            if (currentTurn >= 3) {
+                              await generateConclusion(updatedState)
+                              setCurrentTurn(4)
+                              setCurrentPage(1)
+                            } else {
+                              setCurrentTurn(currentTurn + 1)
+                              setCurrentPage(1)
+                            }
+                          } else if (result.status === 'needs_retry') {
+                            setErrorMessage(result.errorMessage || 'Please try a different response.')
+                          } else {
+                            setErrorMessage('Invalid response from server. Please try again.')
+                          }
+                        } catch (error) {
+                          setErrorMessage('Network error. Please try again.')
+                        } finally {
+                          setIsLoading(false)
+                        }
+                      }}
+                      isLoading={isLoading}
+                    />
+                    
+                    {errorMessage && (
+                      <div className="text-red-600 text-sm text-center">
+                        {errorMessage}
+                      </div>
+                    )}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="space-y-4"
+                  >
+                    <textarea
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      placeholder="Type your response here..."
+                      className="w-full h-32 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 text-base"
+                      disabled={isLoading}
+                    />
+                    
+                    {errorMessage && (
+                      <div className="text-red-600 text-sm">
+                        {errorMessage}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleSubmitInput}
+                      disabled={isLoading || !userInput.trim()}
+                      className="w-full bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? 'Processing...' : 'Submit Response'}
+                    </button>
+                  </motion.div>
+                )
               ) : (
                 <motion.div
                   initial={{ opacity: 0 }}
