@@ -14,7 +14,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="overflow-hidden">
         <div className="h-screen bg-white sm:bg-gray-800 flex justify-center items-center">
-          <div className="w-full sm:max-w-[375px] sm:h-[90vh] h-screen bg-white sm:rounded-lg sm:shadow-2xl overflow-hidden">
+          <div className="w-full sm:max-w-[375px] sm:h-[90vh] h-screen bg-white sm:rounded-lg sm:shadow-2xl overflow-y-auto">
             {children}
           </div>
         </div>

@@ -70,7 +70,8 @@ export const INTENT_CLASSIFIER_PROMPT = (userInput: string) => `You are an inten
 
 Your job is to classify the user's freeform response into one of 8 behavioral intents based on their dominant instinct. These intents reflect how a user handles social, creative, and professional pressure in ambiguous situations.
 
-Return only:
+CRITICAL: You must respond with ONLY valid JSON. No explanations, no additional text, no formatting. Just the JSON object below:
+
 {
   "intent": "[best matching intent]"
 }
@@ -138,7 +139,9 @@ Intent: Justify
 # User Response to Classify:
 "${userInput}"
 
-Classify this response into one of the 8 intents above.`;
+Classify this response into one of the 8 intents above.
+
+RESPOND WITH ONLY THE JSON OBJECT - NO OTHER TEXT:`;
 
 export const CONCLUSION_PROMPT = (storySoFar: string, userResponses: string[]) => `You're writing a realistic conclusion to someone's viral remix story based on their actual decisions.
 

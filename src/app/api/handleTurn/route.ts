@@ -63,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
       const classificationPrompt = (scenarioPrompts as any).classification(userInput);
       
       const classificationResponse = await anthropic.messages.create({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 50,
         messages: [{ role: 'user', content: classificationPrompt }]
       });
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
       }
       
       const storyResponse = await anthropic.messages.create({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 300,
         messages: [{ role: 'user', content: storyPrompt }]
       });
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
       const enginePrompt = (scenarioPrompts as any).engine(userInput, trimmedStorySoFar, getCurrentQuestion(scenarioType, currentTurn));
 
       const engineResponse = await anthropic.messages.create({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 500,
         messages: [{ role: 'user', content: enginePrompt }]
       });

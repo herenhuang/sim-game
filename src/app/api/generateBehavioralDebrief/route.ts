@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     // Generate behavioral debrief using Claude
     const debriefResponse = await anthropic.messages.create({
-      model: "claude-3-haiku-20240307",
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 600,
       messages: [
         {

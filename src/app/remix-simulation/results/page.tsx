@@ -143,9 +143,9 @@ export default function ResultsPage() {
                 className="text-center"
               >
                 <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="text-lg font-light text-gray-600"
+                  animate={{ opacity: [0.6, 1, 0.6] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="text-sm font-light text-gray-600"
                 >
                   Simulation completed. Analyzing your actions.
                 </motion.div>
@@ -154,7 +154,7 @@ export default function ResultsPage() {
           )}
 
           {/* Results Pages */}
-          {currentResultsPage > 0 && (
+          {currentResultsPage > 0 && !showAnalyzing && (
             <motion.div
               key={currentResultsPage}
               initial={{ opacity: 0, y: 20 }}
@@ -167,7 +167,7 @@ export default function ResultsPage() {
                 <div className="flex-1 flex items-center justify-center">
                   <div className="w-full max-w-sm mx-auto">
                     {/* Archetype Card */}
-                    <div className="bg-white border-4 border-orange-400 rounded-2xl p-8 shadow-xl">
+                    <div className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
                       {/* Large Emoji */}
                       <div className="text-center mb-6">
                         <div className="text-6xl mb-4">{archetype.emoji}</div>
@@ -244,7 +244,7 @@ export default function ResultsPage() {
                   
                   {/* Content Text - Full Page Scrollable */}
                   <div 
-                    className="overflow-y-auto px-6 pb-8 h-[32rem] border border-red-500"
+                    className="overflow-y-auto px-6 pb-8 h-[32rem]"
                     style={{
                       scrollbarWidth: 'thin',
                       scrollbarColor: '#d1d5db transparent'

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     // Generate conclusion using Claude
     const conclusionResponse = await anthropic.messages.create({
-      model: "claude-3-haiku-20240307",
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 800,
       messages: [
         {

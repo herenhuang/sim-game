@@ -260,14 +260,14 @@ Notifications keep flooding in—only now, they carry a different weight.`
 
           {/* Bottom section - with more spacing */}
           {textComplete && (
-            <div className={`flex-1 ${currentTurn === 3 && currentPage === 2 ? 'flex flex-col' : currentTurn === 1 && currentPage === 3 ? 'relative' : 'flex items-end'}`}>
+            <div className={`flex-1 ${currentTurn === 3 && currentPage === 2 ? 'flex flex-col' : currentTurn === 1 && currentPage === 3 ? 'flex flex-col' : 'flex items-end'}`}>
               {isInputPage() ? (
                 currentTurn === 1 && currentPage === 3 ? (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6 }}
-                    className="absolute top-0 left-0 right-0 bottom-0 space-y-4"
+                    className="flex-1 space-y-4"
                   >
                     <IMessageChat
                       friendMessage="Hey, you worried about that copyright thing?"
