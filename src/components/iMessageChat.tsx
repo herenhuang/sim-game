@@ -12,8 +12,8 @@ interface IMessageChatProps {
 
 export default function IMessageChat({ friendMessage, onSendMessage, isLoading = false }: IMessageChatProps) {
   const [message, setMessage] = useState('')
-  const [showFriendMessage, setShowFriendMessage] = useState(false)
-  const [showInput, setShowInput] = useState(false)
+  const [showFriendMessage, setShowFriendMessage] = useState(true)
+  const [showInput, setShowInput] = useState(true)
   const [userMessage, setUserMessage] = useState('')
   const [showUserMessage, setShowUserMessage] = useState(false)
 
@@ -56,14 +56,9 @@ export default function IMessageChat({ friendMessage, onSendMessage, isLoading =
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      {/* Header */}
-      <div className="text-center mb-6">
-        <div className="text-base font-light text-gray-800">Your friend messages you:</div>
-      </div>
-
+    <div className="w-full h-full flex flex-col">
       {/* Chat Container */}
-      <div className="bg-gray-100 rounded-2xl p-6 h-[480px] flex flex-col">
+      <div className="bg-gray-100 rounded-2xl p-6 flex-1 flex flex-col">
         {/* Friend's Message */}
         <div className="flex justify-start mb-4">
           {showFriendMessage && (
@@ -104,7 +99,7 @@ export default function IMessageChat({ friendMessage, onSendMessage, isLoading =
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
+            transition={{ duration: 0.4, delay: 0 }}
             className="flex items-end gap-2"
           >
             <div className="flex-1 bg-white rounded-2xl border border-gray-300 py-2 px-3">
@@ -112,8 +107,8 @@ export default function IMessageChat({ friendMessage, onSendMessage, isLoading =
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="iMessage"
-                className="w-full resize-none outline-none text-base overflow-y-auto"
+                placeholder="Type your response here"
+                className="w-full resize-none outline-none text-sm overflow-y-auto"
                 disabled={isLoading}
                 rows={2}
                 style={{

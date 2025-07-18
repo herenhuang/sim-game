@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { SimulationState, HandleTurnResponse } from '@/lib/types'
 import { INITIAL_SCENE } from '@/lib/scenarios/remix'
 import IMessageChat from '@/components/iMessageChat'
+import InstagramDM from '@/components/InstagramDM'
+import EmailDraft from '@/components/EmailDraft'
 
 export default function RemixSimulationPage() {
   const router = useRouter()
@@ -59,7 +61,7 @@ In between the praise, the comments start shifting: 'This is genius.' 'Wait... i
 
 Notifications keep flooding in—only now, they carry a different weight.`
       } else if (currentPage === 3) {
-        return '' // iMessage component will handle this
+        return `You're scrolling through and reading the comments when your friend sends you a text.`
       }
     } else if (currentTurn === 2) {
       if (currentPage === 1) {
@@ -67,9 +69,7 @@ Notifications keep flooding in—only now, they carry a different weight.`
         const extracted = simulationState.storySoFar.split('NARRATIVE CONTINUATION: "')[1]?.split('"')[0]
         return extracted || "Loading..."
       } else if (currentPage === 2) {
-        return `The situation gets crazier. A major record label DMs you: 'We love your remix. We want to sign you for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?'
-
-What do you respond to them with?`
+        return `And then bam! A plot twist. A major record label in your area sends you a DM.`
       }
     } else if (currentTurn === 3) {
       if (currentPage === 1) {
@@ -77,9 +77,7 @@ What do you respond to them with?`
         const extracted = simulationState.storySoFar.split('NARRATIVE CONTINUATION: "')[2]?.split('"')[0]
         return extracted || "Loading..."
       } else if (currentPage === 2) {
-        return `Plot twist: The original artist's manager emails you. They're not angry - they want to collaborate! But they want to re-record the whole thing 'properly' in a studio. This would take at least two weeks and kill your current viral momentum.
-
-What do you respond to them with?`
+        return `A couple hours later, you original artist's manager emails you and they want to collaborate! But they want to re-record the whole thing 'properly' in a studio. This would take at least two weeks and kill your current momentum.`
       }
     } else if (currentTurn === 4) {
       // Conclusion page
@@ -250,32 +248,174 @@ What do you respond to them with?`
     <div className="h-full bg-white flex flex-col">
       <ProgressBar currentPage={getCurrentPageNumber()} />
       
-      <div className="flex-1 flex flex-col p-8 pt-12">
-        <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col p-8 pt-8">
+        <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col">
           {/* Scene Text - positioned towards top */}
-          <div className="mt-8 mb-auto">
+          <div className="mt-4 mb-6">
             <AnimatedText 
               text={getTurnPageContent()}
               onComplete={() => setTextComplete(true)}
             />
           </div>
 
-          {/* Bottom section - always at bottom */}
+          {/* Bottom section - with more spacing */}
           {textComplete && (
-            <div className="mt-auto">
+            <div className={`flex-1 ${currentTurn === 3 && currentPage === 2 ? 'flex flex-col' : currentTurn === 1 && currentPage === 3 ? 'relative' : 'flex items-end'}`}>
               {isInputPage() ? (
                 currentTurn === 1 && currentPage === 3 ? (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6 }}
-                    className="space-y-4"
+                    className="absolute top-0 left-0 right-0 bottom-0 space-y-4"
                   >
                     <IMessageChat
                       friendMessage="Hey, you worried about that copyright thing?"
                       onSendMessage={async (message) => {
                         setUserInput(message)
                         // Call handleSubmitInput directly with the message
+                        setIsLoading(true)
+                        setErrorMessage('')
+                        
+                        try {
+                          const response = await fetch('/api/handleTurn', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              userInput: message,
+                              storySoFar: simulationState.storySoFar,
+                              scenarioType: 'remix',
+                              currentTurn: currentTurn
+                            })
+                          })
+
+                          const result: HandleTurnResponse = await response.json()
+
+                          if (result.status === 'success' && result.classification && result.nextSceneText) {
+                            const updatedState = {
+                              ...simulationState,
+                              storySoFar: `${simulationState.storySoFar}\n\nNARRATIVE CONTINUATION: "${result.nextSceneText}"`,
+                              userPath: [...simulationState.userPath, result.classification],
+                              userActions: [...simulationState.userActions, result.actionSummary || ''],
+                              userResponses: [...simulationState.userResponses, message],
+                              currentTurn: currentTurn
+                            }
+                            
+                            setSimulationState(updatedState)
+                            setUserInput('')
+
+                            if (currentTurn >= 3) {
+                              await generateConclusion(updatedState)
+                              setCurrentTurn(4)
+                              setCurrentPage(1)
+                            } else {
+                              setCurrentTurn(currentTurn + 1)
+                              setCurrentPage(1)
+                            }
+                          } else if (result.status === 'needs_retry') {
+                            setErrorMessage(result.errorMessage || 'Please try a different response.')
+                          } else {
+                            setErrorMessage('Invalid response from server. Please try again.')
+                          }
+                        } catch (error) {
+                          setErrorMessage('Network error. Please try again.')
+                        } finally {
+                          setIsLoading(false)
+                        }
+                      }}
+                      isLoading={isLoading}
+                    />
+                    
+                    {errorMessage && (
+                      <div className="text-red-600 text-sm text-center">
+                        {errorMessage}
+                      </div>
+                    )}
+                  </motion.div>
+                ) : currentTurn === 2 && currentPage === 2 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="space-y-4"
+                  >
+                    <InstagramDM
+                      senderName="APEX Records"
+                      senderMessage="We love your remix. We want to sign you for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?"
+                      onSendMessage={async (message) => {
+                        setUserInput(message)
+                        setIsLoading(true)
+                        setErrorMessage('')
+                        
+                        try {
+                          const response = await fetch('/api/handleTurn', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              userInput: message,
+                              storySoFar: simulationState.storySoFar,
+                              scenarioType: 'remix',
+                              currentTurn: currentTurn
+                            })
+                          })
+
+                          const result: HandleTurnResponse = await response.json()
+
+                          if (result.status === 'success' && result.classification && result.nextSceneText) {
+                            const updatedState = {
+                              ...simulationState,
+                              storySoFar: `${simulationState.storySoFar}\n\nNARRATIVE CONTINUATION: "${result.nextSceneText}"`,
+                              userPath: [...simulationState.userPath, result.classification],
+                              userActions: [...simulationState.userActions, result.actionSummary || ''],
+                              userResponses: [...simulationState.userResponses, message],
+                              currentTurn: currentTurn
+                            }
+                            
+                            setSimulationState(updatedState)
+                            setUserInput('')
+
+                            if (currentTurn >= 3) {
+                              await generateConclusion(updatedState)
+                              setCurrentTurn(4)
+                              setCurrentPage(1)
+                            } else {
+                              setCurrentTurn(currentTurn + 1)
+                              setCurrentPage(1)
+                            }
+                          } else if (result.status === 'needs_retry') {
+                            setErrorMessage(result.errorMessage || 'Please try a different response.')
+                          } else {
+                            setErrorMessage('Invalid response from server. Please try again.')
+                          }
+                        } catch (error) {
+                          setErrorMessage('Network error. Please try again.')
+                        } finally {
+                          setIsLoading(false)
+                        }
+                      }}
+                      isLoading={isLoading}
+                    />
+                    
+                    {errorMessage && (
+                      <div className="text-red-600 text-sm text-center">
+                        {errorMessage}
+                      </div>
+                    )}
+                  </motion.div>
+                ) : currentTurn === 3 && currentPage === 2 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="space-y-4"
+                  >
+                    <EmailDraft
+                      recipientName="Sarah (Artist Manager)"
+                      recipientEmail="sarah.chen@musicmanagement.com"
+                      subject="re: collaboration opp"
+                      context="They're not angry - they want to collaborate! But they want to re-record the whole thing 'properly' in a studio. This would take at least two weeks and kill your current viral momentum."
+                      onSendEmail={async (message) => {
+                        setUserInput(message)
                         setIsLoading(true)
                         setErrorMessage('')
                         
@@ -369,7 +509,7 @@ What do you respond to them with?`
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.6 }}
-                  className="space-y-4"
+                  className="w-full space-y-4"
                 >
                   {currentTurn === 4 && currentPage === 1 ? (
                     <button
