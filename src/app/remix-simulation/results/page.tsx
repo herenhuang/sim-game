@@ -256,30 +256,7 @@ export default function ResultsPage() {
                         onComplete={() => setTextComplete(true)}
                       />
                       
-                      {/* Navigation Button - MOVED INSIDE SCROLL AREA */}
-                      {textComplete && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.6 }}
-                          className="text-center mt-8"
-                        >
-                          <div>
-                        <button
-                          onClick={() => {
-                            // Clear saved state when starting new scenario
-                            localStorage.removeItem('remix-simulation-state')
-                            localStorage.removeItem('remix-conclusion-text')
-                            localStorage.removeItem('remix-behavioral-debrief')
-                            router.push('/scenarios')
-                          }}
-                          className="w-full bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
-                        >
-                          Try Another Scenario
-                        </button>
-                          </div>
-                        </motion.div>
-                      )}
+                      {/* Navigation button removed - now handled within AnimatedText component */}
                     </div>
                   </div>
                 </div>
@@ -338,9 +315,63 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
     })
   }
 
+  // Parse behavioral debrief with sections
+  const parseBehavioralDebrief = (text: string) => {
+    if (!text || text.trim() === '') return null
+    
+    const sentences = text.split('. ').filter(sentence => sentence.trim() !== '')
+    const sections = []
+    
+    // First section: Initial Response Pattern
+    const firstSectionSentences = sentences.slice(0, Math.ceil(sentences.length / 2))
+    const firstContent = firstSectionSentences.join('. ')
+    sections.push({
+      title: "📊 Your Initial Response Pattern",
+      content: firstContent + (firstContent.endsWith('.') ? '' : '.')
+    })
+    
+    // Second section: Opportunity & Adaptation
+    const secondSectionSentences = sentences.slice(Math.ceil(sentences.length / 2))
+    const secondContent = secondSectionSentences.join('. ')
+    sections.push({
+      title: "🚀 Opportunity & Adaptation Style", 
+      content: secondContent + (secondContent.endsWith('.') ? '' : '.')
+    })
+    
+    return sections.map((section, sectionIndex) => (
+      <div key={sectionIndex} className="mb-6 last:mb-0">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">{section.title}</h3>
+        <p className="text-base font-light text-gray-800 leading-relaxed">{section.content}</p>
+      </div>
+    ))
+  }
+
   return (
     <div className="text-base font-light text-gray-800 leading-relaxed text-left">
-      {parseText(displayedText)}
+      {/* Check if this is behavioral debrief content */}
+      {text.includes('Your responses') || text.includes('decision pattern') || text.includes('pressure') ? 
+        parseBehavioralDebrief(displayedText) : 
+        parseText(displayedText)
+      }
+      
+      {/* Add navigation link at the end of behavioral debrief */}
+      {(text.includes('Your responses') || text.includes('decision pattern') || text.includes('pressure')) && displayedText.length > 0 && displayedText.length >= text.length && (
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <p className="text-center text-gray-600">
+            <button
+              onClick={() => {
+                localStorage.removeItem('remix-simulation-state')
+                localStorage.removeItem('remix-conclusion-text')
+                localStorage.removeItem('remix-behavioral-debrief')
+                window.location.href = '/scenarios'
+              }}
+              className="text-orange-600 hover:text-orange-700 font-medium underline"
+            >
+              Try another scenario →
+            </button>
+          </p>
+        </div>
+      )}
     </div>
   )
 }
