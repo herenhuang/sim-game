@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { HandleTurnRequest, HandleTurnResponse } from '@/lib/types';
 import { GUARD_RAIL_PROMPT as CRISIS_GUARD_RAIL, ENGINE_PROMPT as CRISIS_ENGINE, QUESTIONS as CRISIS_QUESTIONS } from '@/lib/scenarios/crisis';
-import { GUARD_RAIL_PROMPT as REMIX_GUARD_RAIL, STORY_PROMPT as REMIX_STORY, INTENT_CLASSIFIER_PROMPT as REMIX_CLASSIFICATION, QUESTIONS as REMIX_QUESTIONS } from '@/lib/scenarios/remix';
+import { GUARD_RAIL_PROMPT as REMIX_GUARD_RAIL, STORY_PROMPT_TURN_1, STORY_PROMPT_TURN_2, STORY_PROMPT_TURN_3, INTENT_CLASSIFIER_PROMPT as REMIX_CLASSIFICATION, QUESTIONS as REMIX_QUESTIONS } from '@/lib/scenarios/remix';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
         case 'crisis':
           return { guardRail: CRISIS_GUARD_RAIL, engine: CRISIS_ENGINE };
         case 'remix':
-          return { guardRail: REMIX_GUARD_RAIL, story: REMIX_STORY, classification: REMIX_CLASSIFICATION };
+          return { guardRail: REMIX_GUARD_RAIL, classification: REMIX_CLASSIFICATION };
         default:
           throw new Error(`Unknown scenario type: ${type}`);
       }
@@ -39,35 +39,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
 
     const scenarioPrompts = getScenarioPrompts(scenarioType);
 
-    // Guard Rail Check (Prompt #1)
-    const guardRailPrompt = scenarioPrompts.guardRail(userInput);
+    // Guard Rail Check (Prompt #1) - DISABLED FOR PERFORMANCE
+    // const guardRailPrompt = scenarioPrompts.guardRail(userInput);
     
     console.log('=== GUARDRAIL DEBUG ===');
     console.log('Scenario:', scenarioType);
     console.log('User Input:', userInput);
-    console.log('Guardrail Prompt Preview:', guardRailPrompt.substring(0, 300) + '...');
-
-    const guardRailResponse = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 10,
-      messages: [{ role: 'user', content: guardRailPrompt }]
-    });
-
-    const guardRailResult = guardRailResponse.content[0].type === 'text' 
-      ? guardRailResponse.content[0].text.trim() 
-      : '';
-      
-    console.log('AI Response:', guardRailResult);
-    console.log('Is Harmful/Spam/Nonsense (will block):', guardRailResult === 'YES');
-    console.log('Will Allow Through:', guardRailResult === 'NO');
+    console.log('Guardrail: SKIPPED FOR PERFORMANCE');
     console.log('=== END DEBUG ===');
-
-    if (guardRailResult === 'YES') {
-      return NextResponse.json({
-        status: 'needs_retry',
-        errorMessage: 'Please try a different response.'
-      });
-    }
 
     // Trim context if too long
     const trimmedStorySoFar = storySoFar.length > 2000 ? 
@@ -80,21 +59,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
 
     // Handle different prompt structures
     if (scenarioType === 'remix') {
-      // Two-step process for remix
-      // Step 1: Story continuation
-      const storyPrompt = (scenarioPrompts as any).story(userInput, trimmedStorySoFar, currentQuestion);
-      
-      const storyResponse = await anthropic.messages.create({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: storyPrompt }]
-      });
-
-      const nextSceneText = storyResponse.content[0].type === 'text' 
-        ? storyResponse.content[0].text.trim() 
-        : '';
-
-      // Step 2: Classification  
+      // Step 1: Classification first
       const classificationPrompt = (scenarioPrompts as any).classification(userInput);
       
       const classificationResponse = await anthropic.messages.create({
@@ -117,9 +82,35 @@ export async function POST(request: NextRequest): Promise<NextResponse<HandleTur
         intent = 'Unknown';
       }
 
+      // Step 2: Get the appropriate story prompt for this turn
+      let storyPrompt;
+      switch (currentTurn) {
+        case 1:
+          storyPrompt = STORY_PROMPT_TURN_1(userInput, intent);
+          break;
+        case 2:
+          storyPrompt = STORY_PROMPT_TURN_2(userInput, intent);
+          break;
+        case 3:
+          storyPrompt = STORY_PROMPT_TURN_3(userInput, intent);
+          break;
+        default:
+          throw new Error(`Invalid turn number: ${currentTurn}`);
+      }
+      
+      const storyResponse = await anthropic.messages.create({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: storyPrompt }]
+      });
+
+      const nextSceneText = storyResponse.content[0].type === 'text' 
+        ? storyResponse.content[0].text.trim() 
+        : '';
+
       console.log('\n📥 AI RESPONSES:')
-      console.log(`   🎭 STORY CONTINUATION: "${nextSceneText}"`)
       console.log(`   🧠 INTENT CLASSIFICATION: ${intent}`)
+      console.log(`   🎭 STORY CONTINUATION (Turn ${currentTurn}): "${nextSceneText}"`)
       console.log('\n=== END TURN TRANSCRIPT ===\n')
 
       return NextResponse.json({

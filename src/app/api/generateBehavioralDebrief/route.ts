@@ -77,22 +77,30 @@ function getBehavioralDebriefPrompt(userResponses: string[], userPath: string[],
 }
 
 function getRemixBehavioralDebriefPrompt(userResponses: string[], userPath: string[]): string {
-  return `You're providing personalized behavioral insights for someone who just completed a viral remix scenario.
+  return `You're a behavioral analyst providing insights on someone's creative decision-making under pressure.
 
-# Their Journey
-Turn 1 (Friend's copyright question): "${userResponses[0] || 'No response'}" -> ${userPath[0] || 'Unknown'}
-Turn 2 (Record label deadline): "${userResponses[1] || 'No response'}" -> ${userPath[1] || 'Unknown'}
-Turn 3 (Artist collaboration offer): "${userResponses[2] || 'No response'}" -> ${userPath[2] || 'Unknown'}
+# Scenario Context
+They had a viral remix (2M+ views) but used copyrighted audio without permission. Three pressure moments:
+1. Friend worried about copyright issues
+2. Record label offered fast-track deal (needed artist permission by tomorrow)
+3. Original artist's manager offered collaboration (slower but safer timeline)
+
+# Their Actual Responses & Classifications
+Turn 1: "${userResponses[0] || 'No response'}" -> ${userPath[0] || 'Unknown'}
+Turn 2: "${userResponses[1] || 'No response'}" -> ${userPath[1] || 'Unknown'}  
+Turn 3: "${userResponses[2] || 'No response'}" -> ${userPath[2] || 'Unknown'}
 
 # Your Task
-Write a brief behavioral debrief about their decision-making patterns. Focus on what their choices reveal about their creative leadership style.
+Analyze their decision pattern in this creative pressure situation. What does their approach reveal about how they handle risk, opportunity, and creative control?
 
-# Instructions
-- Write in second person ("you") 
-- Keep it conversational like a skilled coach
-- Reference their specific intent choices
-- Length: 300-400 characters MAX
-- 2-3 insights they can apply to real situations
+# Instructions  
+- Write in second person ("you") - NEVER use "I", "As your analyst", or "Let me"
+- LENGTH REQUIREMENT: EXACTLY 200-250 words. NO MORE THAN 250 WORDS.
+- Count your words carefully. Stop writing when you reach 250 words.
+- Tone: Like a very smart friend - insightful but kind and conversational
+- Focus on their behavioral pattern across all three decisions
+- Be specific about what their choices reveal
+- Make it personal to their path
 
-Write the behavioral debrief as flowing paragraphs.`
+Write 2 short paragraphs analyzing their decision-making patterns. BE CONCISE.`
 }

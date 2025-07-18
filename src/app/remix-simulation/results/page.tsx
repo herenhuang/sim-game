@@ -236,7 +236,7 @@ export default function ResultsPage() {
               {currentResultsPage === 2 && (
                 <div className="flex-1 flex flex-col">
                   {/* Page Title Header */}
-                  <div className="text-center mb-8 pt-16">
+                  <div className="text-center mb-4 pt-8">
                     <h1 className="text-xl font-medium text-gray-900">
                       📊 Your Decision-Making Patterns
                     </h1>
@@ -244,7 +244,7 @@ export default function ResultsPage() {
                   
                   {/* Content Text - Full Page Scrollable */}
                   <div 
-                    className="flex-1 overflow-y-auto px-6 pb-8"
+                    className="overflow-y-auto px-6 pb-8 h-[32rem] border border-red-500"
                     style={{
                       scrollbarWidth: 'thin',
                       scrollbarColor: '#d1d5db transparent'
@@ -255,30 +255,16 @@ export default function ResultsPage() {
                         text={getPageContent(currentResultsPage)}
                         onComplete={() => setTextComplete(true)}
                       />
-                    </div>
-                  </div>
-
-                  {/* Navigation Button */}
-                  {textComplete && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.6 }}
-                      className="text-center"
-                    >
-                      <div className="space-y-4">
-                        <button
-                          onClick={() => {
-                            // Clear saved state and replay the same scenario
-                            localStorage.removeItem('remix-simulation-state')
-                            localStorage.removeItem('remix-conclusion-text')
-                            localStorage.removeItem('remix-behavioral-debrief')
-                            router.push('/remix-simulation')
-                          }}
-                          className="w-full bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
+                      
+                      {/* Navigation Button - MOVED INSIDE SCROLL AREA */}
+                      {textComplete && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.6 }}
+                          className="text-center mt-8"
                         >
-                          Play Again
-                        </button>
+                          <div>
                         <button
                           onClick={() => {
                             // Clear saved state when starting new scenario
@@ -287,13 +273,15 @@ export default function ResultsPage() {
                             localStorage.removeItem('remix-behavioral-debrief')
                             router.push('/scenarios')
                           }}
-                          className="w-full bg-gray-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-gray-600 transition-all duration-200"
+                          className="w-full bg-orange-500 text-white px-8 py-3 text-base font-light rounded-lg hover:bg-orange-600 transition-all duration-200"
                         >
                           Try Another Scenario
                         </button>
-                      </div>
-                    </motion.div>
-                  )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -351,7 +339,7 @@ function AnimatedText({ text, onComplete }: { text: string, onComplete: () => vo
   }
 
   return (
-    <div className="text-base font-light text-gray-800 leading-relaxed text-left max-w-2xl mx-auto">
+    <div className="text-base font-light text-gray-800 leading-relaxed text-left">
       {parseText(displayedText)}
     </div>
   )

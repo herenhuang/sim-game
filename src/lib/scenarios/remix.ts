@@ -14,19 +14,57 @@ ${SCENARIO_CONTEXT}
 
 # Your Verdict (YES or NO):`;
 
-export const STORY_PROMPT = (userInput: string, storySoFar: string, currentQuestion: string | null = null) => `You're continuing someone's story based on their response. 
+export const STORY_PROMPT_TURN_1 = (userInput: string, classification: string) => `You're writing the conclusion of a scene where a friend just asked about copyright concerns regarding a viral remix.
 
-# Their Response
+# Scene Context
+Your remix went viral overnight (2M+ views) but you used the original song without permission. Comments are blowing up with both praise and copyright questions. Your best friend just texted: "Hey, you OK with this copyright stuff?"
+
+# User's Response
 "${userInput}"
 
+# Classification
+The user's approach was classified as: ${classification}
+
 # Your Task
-Write what they do next in 2 sentences. Match the vibe of their response - if they say "YOLO!" then they're not too worried. If they're hesitant, show that. If they're confident, show that.
+Write 2 sentences that acknowledge your response to your friend and smoothly transition the scene, matching the ${classification} energy. Keep it simple - just show how you feel about their concern and what your mindset is as this moment settles.
 
-Example: If they say "YOLO!" → "You're aware of the situation but not too worried. You tell Casey that it's probably alright, before checking your phone again to see how your remix is doing."
+Write in second person ("you"). Keep it between 275-325 characters. Write as NARRATIVE DESCRIPTION only - no dialogue, no quotation marks. Return ONLY the story text.`;
 
-Write in second person ("you"). Focus on their immediate reaction and what they do next.
+export const STORY_PROMPT_TURN_2 = (userInput: string, classification: string) => `You're writing the conclusion of a scene where a record label just offered a fast-track deal.
 
-Return ONLY the story text.`;
+# Scene Context
+A major record label DM'd you: "We love your remix. We want to sign you for an official release, but we need to move fast - the hype window is short. Can you get permission from the original artist by tomorrow?"
+
+# User's Response
+"${userInput}"
+
+# Classification
+The user's approach was classified as: ${classification}
+
+# Your Task
+Write 2 sentences that acknowledge your response to the record label and smoothly transition the scene, matching the ${classification} energy. Keep it simple - just show how you feel about their offer and what your mindset is as this moment settles.
+
+Write in second person ("you"). Keep it between 275-325 characters. Write as NARRATIVE DESCRIPTION only - no dialogue, no quotation marks. Return ONLY the story text.`;
+
+export const STORY_PROMPT_TURN_3 = (userInput: string, classification: string) => `You're writing the conclusion of the final scene where the original artist's manager offered collaboration.
+
+# Scene Context
+The original artist's manager emailed: They're not angry - they want to collaborate! But they want to re-record everything "properly" in a studio. This would take at least two weeks and kill your current viral momentum.
+
+# User's Response
+"${userInput}"
+
+# Classification
+The user's approach was classified as: ${classification}
+
+# Your Task
+Write EXACTLY 3 sentences in this structure:
+
+Sentence 1: Show how you feel about the collaboration offer and your response to it.
+Sentence 2: Describe your mindset or what you're thinking as this decision settles.
+Sentence 3: A SHORT sentence (under 10 words) that makes the reader want to turn the page - keep it vague but intriguing.
+
+Write in second person ("you"). Write as NARRATIVE DESCRIPTION only - no dialogue, no quotation marks. Return ONLY the 3 sentences.`;
 
 export const INTENT_CLASSIFIER_PROMPT = (userInput: string) => `You are an intent classifier.
 
@@ -102,24 +140,28 @@ Intent: Justify
 
 Classify this response into one of the 8 intents above.`;
 
-export const CONCLUSION_PROMPT = (storySoFar: string, userResponses: string[]) => `You're concluding someone's viral remix story. Write how their journey ended.
+export const CONCLUSION_PROMPT = (storySoFar: string, userResponses: string[]) => `You're writing a realistic conclusion to someone's viral remix story based on their actual decisions.
 
-# Their Journey
+# Scenario Context
+A viral remix (2M+ views) led to three key moments:
+1. Friend asked about copyright concerns
+2. Record label offered fast-track deal with tomorrow deadline  
+3. Original artist's manager offered collaboration (but slower timeline)
+
+# Their Actual Decisions
 Turn 1 (Friend's copyright question): "${userResponses[0] || 'No response'}"
-Turn 2 (Record label deadline): "${userResponses[1] || 'No response'}"
+Turn 2 (Record label deadline): "${userResponses[1] || 'No response'}" 
 Turn 3 (Artist collaboration offer): "${userResponses[2] || 'No response'}"
 
 # Your Task
-Write a brief story conclusion about how things turned out. Keep it upbeat and focused on the outcome.
+Write a realistic conclusion that follows logically from their actual choices. Don't invent outcomes they didn't choose (e.g., if they rejected collaboration, don't say it succeeded).
 
 # Writing Instructions
-- Write in second person ("you") - like the ending of a story
-- Keep it professional but warm
-- Length: 250-300 characters MAX
-- End on a positive, successful note
-- Focus on the story outcome, not addressing the reader directly
-
-Example tone: "The collaboration timeline worked out perfectly, and you created something special together. The record label was excited to work with you, and your remix journey became a complete success."
+- Write in second person ("you")
+- Length: 275-325 characters
+- Base outcome on their actual decisions, not fantasy scenarios
+- Keep it positive but realistic
+- Focus on the logical consequences of their path
 
 Write the story conclusion.`;
 
